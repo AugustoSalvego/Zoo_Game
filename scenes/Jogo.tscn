@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://kuglwwp6qrhp"]
+
+[ext_resource type="Script" uid="uid://dfeii7qbwsgwi" path="res://scripts/jogo.gd" id="1_eopmu"]
+[ext_resource type="Texture2D" uid="uid://coyamoqjudo0a" path="res://img/fundo_jogo.png" id="2_8vgre"]
+
+[node name="Jogo" type="Control" unique_id=1901630956]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_eopmu")
+
+[node name="Layout" type="Control" parent="." unique_id=176300277]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FundoJogo" type="TextureRect" parent="Layout" unique_id=1130823061]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_8vgre")
+stretch_mode = 6
+
+[node name="CaixaPalavra" type="Panel" parent="Layout" unique_id=1721858975]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LblPalavra" type="Label" parent="Layout/CaixaPalavra" unique_id=1126563434]
+layout_mode = 0
+offset_top = 870.0
+offset_right = 1920.0
+offset_bottom = 925.0
+theme_override_font_sizes/font_size = 40
+text = "__ CHORRO"
+
+[node name="CaixaAnimal" type="Panel" parent="Layout" unique_id=864145503]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -1090.0
+offset_top = 40.0
+offset_right = -830.0
+offset_bottom = 300.0
+grow_horizontal = 2
+
+[node name="ImgAnimal" type="TextureRect" parent="Layout/CaixaAnimal" unique_id=1127621801]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Btn1" type="Button" parent="Layout" unique_id=1070927215]
+layout_mode = 0
+offset_left = 1912.0
+offset_top = 933.0
+offset_right = 1920.0
+offset_bottom = 941.0
+size_flags_horizontal = 8
+size_flags_vertical = 4
+
+[node name="Btn2" type="Button" parent="Layout" unique_id=1440110582]
+layout_mode = 0
+offset_top = 945.0
+offset_right = 1920.0
+offset_bottom = 953.0
+
+[node name="Btn3" type="Button" parent="Layout" unique_id=606548503]
+layout_mode = 0
+offset_top = 957.0
+offset_right = 1920.0
+offset_bottom = 965.0
+
+[node name="BtnReiniciar" type="Button" parent="Layout" unique_id=1294507775]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1170.0
+offset_top = -410.0
+offset_right = -750.0
+offset_bottom = -310.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Jogar novamente"
+
+[connection signal="pressed" from="Layout/Btn1" to="." method="_on_btn_1_pressed"]
+[connection signal="pressed" from="Layout/Btn2" to="." method="_on_btn_2_pressed"]
+[connection signal="pressed" from="Layout/Btn3" to="." method="_on_btn_3_pressed"]
