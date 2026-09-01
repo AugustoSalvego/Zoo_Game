@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bggt3w3t0q4pc"]
 
 [ext_resource type="Script" uid="uid://bbvitto4suwx2" path="res://scripts/menu.gd" id="1_xdvgc"]
-[ext_resource type="Texture2D" uid="uid://tu848rmmlal5" path="res://img/fundo_menu.png" id="2_upctu"]
+[ext_resource type="Texture2D" uid="uid://d2fec83tohb7o" path="res://img/bg_menu.png" id="2_upctu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_upctu"]
 bg_color = Color(0.8745098, 0.9490196, 1, 1)
@@ -34,6 +34,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_upctu")
+expand_mode = 1
 stretch_mode = 6
 
 [node name="BtnJogar" type="Button" parent="." unique_id=1194811228]
@@ -52,4 +53,4 @@ grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBoxFlat_upctu")
-text = "Jogar"
+text = "JOGAR"
