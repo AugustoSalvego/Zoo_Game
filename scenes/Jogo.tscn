@@ -1,74 +1,25 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://k8dt13nghusq"]
 
-[ext_resource type="Script" path="res://scripts/jogo.gd" id="1_eopmu"]
-[ext_resource type="Texture2D" path="res://img/fundo_jogo.png" id="2_8vgre"]
+[ext_resource type="Script" uid="uid://dfeii7qbwsgwi" path="res://scripts/jogo.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://coyamoqjudo0a" path="res://img/fundo_jogo.png" id="2"]
 
-[node name="Jogo" type="Control"]
+[node name="Jogo" type="Control" unique_id=1664353800]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_eopmu")
+script = ExtResource("1")
 
-[node name="Layout" type="Control" parent="."]
+[node name="FundoJogo" type="TextureRect" parent="." unique_id=91771361]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="FundoJogo" type="TextureRect" parent="Layout"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2_8vgre")
+mouse_filter = 2
+texture = ExtResource("2")
+expand_mode = 1
 stretch_mode = 6
-
-[node name="CaixaPalavra" type="Panel" parent="Layout"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="LblPalavra" type="Label" parent="Layout/CaixaPalavra"]
-layout_mode = 0
-offset_right = 560.0
-offset_bottom = 150.0
-text = "__CHORRO"
-
-[node name="CaixaAnimal" type="Panel" parent="Layout"]
-layout_mode = 0
-offset_right = 450.0
-offset_bottom = 450.0
-
-[node name="ImgAnimal" type="TextureRect" parent="Layout/CaixaAnimal"]
-layout_mode = 0
-offset_right = 450.0
-offset_bottom = 450.0
-
-[node name="Btn1" type="Button" parent="Layout"]
-layout_mode = 0
-offset_right = 230.0
-offset_bottom = 120.0
-
-[node name="Btn2" type="Button" parent="Layout"]
-layout_mode = 0
-offset_right = 230.0
-offset_bottom = 120.0
-
-[node name="Btn3" type="Button" parent="Layout"]
-layout_mode = 0
-offset_right = 230.0
-offset_bottom = 120.0
-
-[node name="BtnReiniciar" type="Button" parent="Layout"]
-visible = false
-layout_mode = 0
-offset_right = 430.0
-offset_bottom = 110.0
-text = "JOGAR DE NOVO"
