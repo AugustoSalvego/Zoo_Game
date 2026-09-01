@@ -1,0 +1,73 @@
+name: Export Godot Web
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "index.html"
+      - "index.js"
+      - "index.pck"
+      - "index.wasm"
+      - "index.audio.position.worklet.js"
+      - "index.audio.worklet.js"
+      - "index.icon.png"
+      - "index.apple-touch-icon.png"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export-web:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Godot 4.6
+        shell: bash
+        run: |
+          curl -L -o godot.zip "https://github.com/godotengine/godot-builds/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.6-stable_linux.x86_64
+
+      - name: Install Godot 4.6 export templates
+        shell: bash
+        run: |
+          curl -L -o export_templates.tpz "https://github.com/godotengine/godot-builds/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz"
+          rm -rf export_templates_unpack
+          mkdir -p export_templates_unpack
+          unzip -q export_templates.tpz -d export_templates_unpack
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.6.stable"
+          cp -R export_templates_unpack/templates/. "$HOME/.local/share/godot/export_templates/4.6.stable/"
+
+      - name: Import project resources
+        shell: bash
+        run: |
+          ./Godot_v4.6-stable_linux.x86_64 --headless --path . --editor --quit
+
+      - name: Export Web build
+        shell: bash
+        run: |
+          ./Godot_v4.6-stable_linux.x86_64 --headless --path . --export-release "Web" index.html
+
+      - name: Commit updated Web export
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html index.js index.pck index.wasm
+          git add index.audio.position.worklet.js index.audio.worklet.js index.icon.png index.apple-touch-icon.png 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "Web export is already up to date."
+            exit 0
+          fi
+
+          git commit -m "Update Godot Web export [skip ci]"
+          git push origin HEAD:main
