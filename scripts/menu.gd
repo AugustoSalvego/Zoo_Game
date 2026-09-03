@@ -19,7 +19,7 @@ func _ready() -> void:
 	estilizar_botao(btn_jogar)
 	btn_jogar.text = "JOGAR"
 	btn_jogar.pressed.connect(iniciar_jogo)
-	btn_jogar.mouse_entered.connect(func(): audio.play_voice("menu_play"))
+	btn_jogar.mouse_entered.connect(func(): audio.play_hover_voice("menu_play"))
 
 	criar_controles_acessibilidade()
 
@@ -44,7 +44,7 @@ func criar_controles_acessibilidade() -> void:
 	estilizar_botao(btn_como_jogar)
 	btn_como_jogar.add_theme_font_size_override("font_size", 34)
 	btn_como_jogar.pressed.connect(abrir_tutorial)
-	btn_como_jogar.mouse_entered.connect(func(): audio.play_voice("menu_how_to_play"))
+	btn_como_jogar.mouse_entered.connect(func(): audio.play_hover_voice("menu_how_to_play"))
 	add_child(btn_como_jogar)
 
 	btn_volume = Button.new()
@@ -53,7 +53,7 @@ func criar_controles_acessibilidade() -> void:
 	btn_volume.position = Vector2(tela.x - 120, 24)
 	estilizar_botao_pequeno(btn_volume)
 	btn_volume.pressed.connect(toggle_volume_panel)
-	btn_volume.mouse_entered.connect(func(): audio.play_voice("ui_volume"))
+	btn_volume.mouse_entered.connect(func(): audio.play_hover_voice("ui_volume"))
 	add_child(btn_volume)
 
 	volume_panel = Panel.new()

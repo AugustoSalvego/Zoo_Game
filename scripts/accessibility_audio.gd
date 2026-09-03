@@ -7,6 +7,10 @@ var voice_player := AudioStreamPlayer.new()
 var music_player := AudioStreamPlayer.new()
 var sfx_player := AudioStreamPlayer.new()
 
+const HOVER_DEBOUNCE_MS := 220
+var _last_hover_key := ""
+var _last_hover_time_ms := 0
+
 func _ready() -> void:
 	add_child(voice_player)
 	add_child(music_player)
@@ -49,6 +53,18 @@ func speak_and_wait(key: String, fallback_seconds: float = 1.2) -> void:
 
 func stop_voice() -> void:
 	voice_player.stop()
+
+## Usar em sinais mouse_entered/hover. Ignora repetições da MESMA fala
+## enquanto o cursor "treme" sobre o mesmo elemento (comum em touch/mouse),
+## evitando cortar o áudio no meio a cada re-entrada. Falas diferentes
+## (o usuário passou para outro botão) sempre tocam normalmente.
+func play_hover_voice(key: String) -> bool:
+	var now := Time.get_ticks_msec()
+	if key == _last_hover_key and now - _last_hover_time_ms < HOVER_DEBOUNCE_MS:
+		return false
+	_last_hover_key = key
+	_last_hover_time_ms = now
+	return play_voice(key)
 
 func play_music(key: String) -> bool:
 	var path := _find_audio_file("res://audio/music/" + key)

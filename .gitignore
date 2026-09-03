@@ -1,3 +1,19 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Editor / OS temp files
+*.tmp
+*.bak
+*~
+.DS_Store
+Thumbs.db
+
+# Android build output (kept out of version control; produced by CI)
+/build/android/
+*.apk
+*.aab
+
+# Local keystores (never commit signing keys)
+*.keystore
+*.jks

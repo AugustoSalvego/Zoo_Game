@@ -1,6 +1,7 @@
 extends Control
 
 const AccessibilityAudio = preload("res://scripts/accessibility_audio.gd")
+const GameMetrics = preload("res://scripts/game_metrics.gd")
 
 @onready var layout = $Layout
 @onready var fundo_jogo = $Layout/FundoJogo
@@ -14,6 +15,7 @@ const AccessibilityAudio = preload("res://scripts/accessibility_audio.gd")
 @onready var btn_reiniciar = $Layout/BtnReiniciar
 
 var audio
+var metrics
 var fase_atual := 0
 var resposta_correta := ""
 var respondendo := false
@@ -42,6 +44,10 @@ func _ready() -> void:
 	audio = AccessibilityAudio.new()
 	add_child(audio)
 	audio.play_music("game")
+
+	metrics = GameMetrics.new()
+	add_child(metrics)
+	metrics.iniciar_sessao()
 
 	configurar_layout()
 	estilizar_interface()
@@ -174,7 +180,7 @@ func criar_botao_topo(texto: String, posicao: Vector2, voice_key: String) -> But
 	botao.position = posicao
 	estilizar_botao(botao)
 	botao.add_theme_font_size_override("font_size", 30)
-	botao.mouse_entered.connect(func(): audio.play_voice(voice_key))
+	botao.mouse_entered.connect(func(): audio.play_hover_voice(voice_key))
 	layout.add_child(botao)
 	return botao
 
@@ -223,7 +229,7 @@ func repetir_instrucao() -> void:
 func falar_silaba(silaba: String) -> void:
 	if respondendo:
 		return
-	audio.play_voice("syllable_" + silaba.to_lower())
+	audio.play_hover_voice("syllable_" + silaba.to_lower())
 
 func verificar_resposta(resposta: String) -> void:
 	if respondendo or fase_atual >= fases.size():
@@ -238,6 +244,7 @@ func verificar_resposta(resposta: String) -> void:
 	audio.play_voice("syllable_" + resposta.to_lower())
 
 	if resposta == resposta_correta:
+		metrics.registrar_tentativa(fase["animal"], true)
 		lbl_palavra.text = fase["animal"]
 		instruction_label.text = "Muito bem!"
 		estilizar_painel(caixa_palavra, Color(0.65, 1.0, 0.55))
@@ -248,6 +255,7 @@ func verificar_resposta(resposta: String) -> void:
 		fase_atual += 1
 		carregar_fase()
 	else:
+		metrics.registrar_tentativa(fase["animal"], false)
 		lbl_palavra.text = resposta + fase["animal"].substr(2)
 		instruction_label.text = "Tente outra vez."
 		estilizar_painel(caixa_palavra, Color(1.0, 0.65, 0.65))
@@ -265,6 +273,7 @@ func atualizar_progresso() -> void:
 	progress_label.text = texto
 
 func finalizar_jogo() -> void:
+	metrics.finalizar_sessao()
 	progress_label.text = "●   ●   ●   ●   ●   ●   ●"
 	lbl_palavra.text = "PARABÉNS!"
 	instruction_label.text = "Você completou o Zoológico das Sílabas!"
@@ -292,6 +301,7 @@ func criar_confetes() -> void:
 		tween.tween_callback(confete.queue_free)
 
 func reiniciar_jogo() -> void:
+	metrics.iniciar_sessao()
 	fase_atual = 0
 	btn_reiniciar.hide()
 	btn_menu_final.hide()

@@ -24,6 +24,7 @@ var btn_repeat: Button
 var btn_volume: Button
 var volume_panel: Panel
 var volume_slider: HSlider
+var mao_cursor: Label
 
 func _ready() -> void:
 	audio = AccessibilityAudio.new()
@@ -93,9 +94,9 @@ func criar_interface() -> void:
 	btn_ba.pressed.connect(func(): verificar_tutorial("BA"))
 	btn_pa.pressed.connect(func(): verificar_tutorial("PA"))
 
-	btn_ca.mouse_entered.connect(func(): audio.play_voice("syllable_ca"))
-	btn_ba.mouse_entered.connect(func(): audio.play_voice("syllable_ba"))
-	btn_pa.mouse_entered.connect(func(): audio.play_voice("syllable_pa"))
+	btn_ca.mouse_entered.connect(func(): audio.play_hover_voice("syllable_ca"))
+	btn_ba.mouse_entered.connect(func(): audio.play_hover_voice("syllable_ba"))
+	btn_pa.mouse_entered.connect(func(): audio.play_hover_voice("syllable_pa"))
 
 	btn_skip = Button.new()
 	btn_skip.text = "PULAR"
@@ -103,7 +104,7 @@ func criar_interface() -> void:
 	btn_skip.position = Vector2(24, 24)
 	estilizar_botao_pequeno(btn_skip)
 	btn_skip.pressed.connect(finalizar_tutorial)
-	btn_skip.mouse_entered.connect(func(): audio.play_voice("ui_skip"))
+	btn_skip.mouse_entered.connect(func(): audio.play_hover_voice("ui_skip"))
 	add_child(btn_skip)
 
 	btn_repeat = Button.new()
@@ -112,7 +113,7 @@ func criar_interface() -> void:
 	btn_repeat.position = Vector2(tela.x - 230, 24)
 	estilizar_botao_pequeno(btn_repeat)
 	btn_repeat.pressed.connect(func(): audio.play_voice(current_voice_key))
-	btn_repeat.mouse_entered.connect(func(): audio.play_voice("ui_repeat"))
+	btn_repeat.mouse_entered.connect(func(): audio.play_hover_voice("ui_repeat"))
 	add_child(btn_repeat)
 
 	btn_volume = Button.new()
@@ -121,7 +122,7 @@ func criar_interface() -> void:
 	btn_volume.position = Vector2(tela.x - 130, 24)
 	estilizar_botao_pequeno(btn_volume)
 	btn_volume.pressed.connect(toggle_volume_panel)
-	btn_volume.mouse_entered.connect(func(): audio.play_voice("ui_volume"))
+	btn_volume.mouse_entered.connect(func(): audio.play_hover_voice("ui_volume"))
 	add_child(btn_volume)
 
 	volume_panel = Panel.new()
@@ -140,6 +141,27 @@ func criar_interface() -> void:
 	volume_slider.position = Vector2(28, 24)
 	volume_slider.value_changed.connect(func(value: float): audio.save_master_volume(value))
 	volume_panel.add_child(volume_slider)
+
+	mao_cursor = Label.new()
+	mao_cursor.text = "👆"
+	mao_cursor.add_theme_font_size_override("font_size", 70)
+	mao_cursor.size = Vector2(90, 90)
+	mao_cursor.visible = false
+	mao_cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mao_cursor.z_index = 10
+	add_child(mao_cursor)
+
+func mostrar_mao_em(alvo: Control) -> void:
+	mao_cursor.visible = true
+	var destino: Vector2 = alvo.position + alvo.size / 2.0 - mao_cursor.size / 2.0
+	mao_cursor.position = destino + Vector2(0, -40)
+	var tween := create_tween()
+	tween.set_loops()
+	tween.tween_property(mao_cursor, "position:y", destino.y, 0.45).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(mao_cursor, "position:y", destino.y - 25, 0.45).set_trans(Tween.TRANS_SINE)
+
+func esconder_mao() -> void:
+	mao_cursor.visible = false
 
 func executar_tutorial() -> void:
 	bloquear_opcoes(true)
@@ -166,7 +188,9 @@ func executar_tutorial() -> void:
 	instruction_label.text = "Agora clique em CA."
 	current_voice_key = "tutorial_click_ca"
 	audio.play_voice(current_voice_key)
+	mostrar_mao_em(btn_ca)
 	await tutorial_correct_choice
+	esconder_mao()
 	if not tutorial_ativo: return
 
 	word_label.text = "CACHORRO"
@@ -188,6 +212,7 @@ func verificar_tutorial(resposta: String) -> void:
 		current_voice_key = "feedback_try_again"
 		audio.play_voice(current_voice_key)
 		destacar_botao(btn_ca)
+		mostrar_mao_em(btn_ca)
 
 func falar_e_mostrar(key: String, texto: String, fallback: float) -> void:
 	current_voice_key = key
@@ -199,6 +224,8 @@ func finalizar_tutorial() -> void:
 		return
 	tutorial_ativo = false
 	audio.stop_voice()
+	if mao_cursor:
+		mao_cursor.visible = false
 	marcar_tutorial_visto()
 	get_tree().change_scene_to_file("res://scenes/Jogo.tscn")
 
