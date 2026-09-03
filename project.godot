@@ -21,6 +21,7 @@ window/size/viewport_width=1080
 window/size/viewport_height=1920
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=1
 display/window/size/viewport_width=720
 display/window/size/viewport_height=1280
 display/window/stretch/mode="canvas_items"
