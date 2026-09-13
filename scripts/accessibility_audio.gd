@@ -36,6 +36,16 @@ const FALLBACK_TEXTS := {
 	"final_congratulations": "Parabéns! Você completou o Zoológico das Sílabas."
 }
 
+const LOCAL_WORD_PATHS := {
+	"CACHORRO": "res://audio/words/cachorro.ogg",
+	"GATO": "res://audio/words/gato.ogg",
+	"MACACO": "res://audio/words/macaco.ogg",
+	"BALEIA": "res://audio/words/baleia.ogg",
+	"CAVALO": "res://audio/words/cavalo.ogg",
+	"GALINHA": "res://audio/words/galinha.ogg",
+	"TARTARUGA": "res://audio/words/tartaruga.ogg"
+}
+
 const NINO_WORD_URLS := {
 	"GATO": NINO_O_WORDS_BASE + "gato.ogg",
 	"MACACO": NINO_O_WORDS_BASE + "macaco.ogg",
@@ -131,6 +141,13 @@ func play_syllable_and_wait(syllable: String, fallback_seconds: float = 0.7) -> 
 
 func play_word(word: String) -> bool:
 	var normalized := word.strip_edges().to_upper()
+	var local_stream := _get_local_word_stream(normalized)
+	if local_stream != null:
+		_stop_spoken_audio()
+		voice_player.stream = local_stream
+		voice_player.play()
+		return true
+
 	var url := str(NINO_WORD_URLS.get(normalized, ""))
 	if not url.is_empty():
 		_play_remote_nonblocking("word:" + normalized, url, voice_player, "", word.capitalize())
@@ -139,6 +156,14 @@ func play_word(word: String) -> bool:
 
 func play_word_and_wait(word: String, fallback_seconds: float = 1.0) -> void:
 	var normalized := word.strip_edges().to_upper()
+	var local_stream := _get_local_word_stream(normalized)
+	if local_stream != null:
+		_stop_spoken_audio()
+		voice_player.stream = local_stream
+		voice_player.play()
+		await voice_player.finished
+		return
+
 	var url := str(NINO_WORD_URLS.get(normalized, ""))
 	if not url.is_empty():
 		var stream := await _fetch_stream("word:" + normalized, url)
@@ -150,6 +175,12 @@ func play_word_and_wait(word: String, fallback_seconds: float = 1.0) -> void:
 			return
 	speak_text(word.capitalize())
 	await get_tree().create_timer(fallback_seconds).timeout
+
+func _get_local_word_stream(normalized_word: String) -> AudioStream:
+	var path := str(LOCAL_WORD_PATHS.get(normalized_word, ""))
+	if path.is_empty() or not ResourceLoader.exists(path):
+		return null
+	return load(path) as AudioStream
 
 func speak_text(text: String) -> bool:
 	if _tts_voice.is_empty():
