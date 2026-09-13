@@ -53,9 +53,6 @@ func _ready() -> void:
 	btn3.pressed.connect(func(): verificar_resposta(btn3, btn3.text))
 	btn_reiniciar.pressed.connect(reiniciar_jogo)
 
-	btn1.mouse_entered.connect(func(): falar_silaba(btn1.text))
-	btn2.mouse_entered.connect(func(): falar_silaba(btn2.text))
-	btn3.mouse_entered.connect(func(): falar_silaba(btn3.text))
 
 	btn_reiniciar.hide()
 	carregar_fase(true)
@@ -79,6 +76,10 @@ func configurar_layout() -> void:
 	img_animal.offset_bottom = -16
 	img_animal.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	img_animal.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	img_animal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caixa_animal.gui_input.connect(_on_caixa_animal_gui_input)
+	caixa_animal.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	caixa_animal.tooltip_text = "Clique para ouvir o nome do animal"
 
 	caixa_palavra.set_anchors_preset(Control.PRESET_CENTER)
 	caixa_palavra.offset_left = -280
@@ -258,11 +259,6 @@ func repetir_instrucao() -> void:
 		return
 	anunciar_fase()
 
-func falar_silaba(silaba: String) -> void:
-	if respondendo:
-		return
-	audio.play_syllable(silaba)
-
 func verificar_resposta(botao_escolhido: Button, resposta: String) -> void:
 	if respondendo or fase_atual >= fases.size():
 		return
@@ -276,7 +272,7 @@ func verificar_resposta(botao_escolhido: Button, resposta: String) -> void:
 	if resposta == resposta_correta:
 		aplicar_estado_botao(botao_escolhido, Color(0.65, 1.0, 0.55))
 		lbl_palavra.text = fase["animal"]
-		instruction_label.text = "Muito bem!"
+		instruction_label.text = "Parabéns!"
 		estilizar_painel(caixa_palavra, Color(0.65, 1.0, 0.55))
 		await audio.speak_and_wait("feedback_correct", 1.2)
 		await audio.play_word_and_wait(fase["animal"], 1.0)
@@ -358,6 +354,14 @@ func reiniciar_jogo() -> void:
 	btn2.show()
 	btn3.show()
 	carregar_fase(true)
+
+func _on_caixa_animal_gui_input(event: InputEvent) -> void:
+	if fase_atual >= fases.size():
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		audio.play_word(str(fases[fase_atual]["animal"]))
+	elif event is InputEventScreenTouch and event.pressed:
+		audio.play_word(str(fases[fase_atual]["animal"]))
 
 func abrir_tutorial() -> void:
 	audio.stop_voice()

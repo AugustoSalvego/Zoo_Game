@@ -70,6 +70,9 @@ func criar_interface() -> void:
 	animal_panel.clip_contents = true
 	estilizar_painel(animal_panel, Color(0.82, 0.95, 0.82))
 	add_child(animal_panel)
+	animal_panel.gui_input.connect(_on_animal_panel_gui_input)
+	animal_panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	animal_panel.tooltip_text = "Clique para ouvir o nome do animal"
 
 	animal_image = TextureRect.new()
 	animal_image.texture = load("res://img/cachorro.png")
@@ -108,9 +111,7 @@ func criar_interface() -> void:
 	btn_ca.pressed.connect(func(): verificar_tutorial("CA"))
 	btn_ba.pressed.connect(func(): verificar_tutorial("BA"))
 	btn_pa.pressed.connect(func(): verificar_tutorial("PA"))
-	btn_ca.mouse_entered.connect(_on_ca_hovered)
-	btn_ba.mouse_entered.connect(_on_ba_hovered)
-	btn_pa.mouse_entered.connect(_on_pa_hovered)
+
 
 	btn_skip = Button.new()
 	btn_skip.text = "PULAR"
@@ -175,18 +176,6 @@ func criar_interface() -> void:
 	pointer.visible = false
 	add_child(pointer)
 
-func _on_ca_hovered() -> void:
-	if not btn_ca.disabled:
-		audio.play_syllable("CA")
-
-func _on_ba_hovered() -> void:
-	if not btn_ba.disabled:
-		audio.play_syllable("BA")
-
-func _on_pa_hovered() -> void:
-	if not btn_pa.disabled:
-		audio.play_syllable("PA")
-
 func executar_tutorial() -> void:
 	bloquear_opcoes(true)
 	await falar_e_mostrar("tutorial_welcome", "Vamos aprender a jogar!", 2.2)
@@ -222,7 +211,7 @@ func executar_tutorial() -> void:
 	pointer.visible = false
 	word_label.text = "CACHORRO"
 	destacar(word_panel, Color(0.65, 1.0, 0.55))
-	await falar_e_mostrar("feedback_correct", "Muito bem! Você acertou!", 1.8)
+	await falar_e_mostrar("feedback_correct", "Parabéns!", 1.8)
 	if not tutorial_ativo: return
 
 	await falar_e_mostrar("tutorial_your_turn", "Agora é sua vez!", 1.8)
@@ -306,8 +295,15 @@ func aplicar_estado_botao(botao: Button, cor: Color) -> void:
 
 func criar_seta_indicadora() -> Control:
 	var holder := Control.new()
-	holder.size = Vector2(54, 66)
+	holder.size = Vector2(62, 74)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var shadow := Polygon2D.new()
+	shadow.polygon = PackedVector2Array([
+		Vector2(26, 6), Vector2(38, 6), Vector2(38, 41),
+		Vector2(54, 41), Vector2(32, 68), Vector2(10, 41), Vector2(26, 41)
+	])
+	shadow.color = Color(0.05, 0.05, 0.03, 0.48)
+	holder.add_child(shadow)
 	var seta := Polygon2D.new()
 	seta.polygon = PackedVector2Array([
 		Vector2(21, 0), Vector2(33, 0), Vector2(33, 35),
@@ -330,6 +326,12 @@ func animar_seta() -> void:
 	tween.set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(pointer, "position:y", pointer.position.y + 10.0, 0.45)
 	tween.tween_property(pointer, "position:y", pointer.position.y, 0.45)
+
+func _on_animal_panel_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		audio.play_word("CACHORRO")
+	elif event is InputEventScreenTouch and event.pressed:
+		audio.play_word("CACHORRO")
 
 func toggle_volume_panel() -> void:
 	volume_panel.visible = not volume_panel.visible
