@@ -39,6 +39,23 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def replace_exact_count(
+    text: str,
+    old: str,
+    new: str,
+    label: str,
+    expected_count: int,
+) -> str:
+    if old not in text and new in text:
+        return text
+    count = text.count(old)
+    if count != expected_count:
+        raise RuntimeError(
+            f"{label}: expected exactly {expected_count} matches, found {count}"
+        )
+    return text.replace(old, new)
+
+
 def patch_manifest() -> None:
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
     data["profile"]["speed"] = 0.90
@@ -138,7 +155,7 @@ def patch_game() -> None:
         "retry pacing",
     )
 
-    text = replace_once(
+    text = replace_exact_count(
         text,
         '\t\tawait audio.speak_and_wait("final_title", 0.8)\n'
         '\t\tawait audio.speak_and_wait("final_complete", 2.0)\n',
@@ -146,6 +163,7 @@ def patch_game() -> None:
         '\t\tawait get_tree().create_timer(0.30).timeout\n'
         '\t\tawait audio.speak_and_wait("final_complete", 2.0)\n',
         "final-screen breathing room",
+        2,
     )
 
     GAME.write_text(text, encoding="utf-8")
