@@ -6,7 +6,7 @@
     "voice": "pf_dora",
     "language": "pt-BR",
     "response_format": "mp3",
-    "speed": 0.92,
+    "speed": 0.90,
     "license": "Apache-2.0",
     "generation": "local/offline"
   },
@@ -17,7 +17,7 @@
     "feedback_positive": "Tom positivo e encorajador, sem gritar e sem euforia excessiva.",
     "feedback_retry": "Tom acolhedor e neutro, sem demonstrar frustração.",
     "word": "Pronuncie somente a palavra indicada, de forma clara e natural, sem artigo e sem explicação.",
-    "syllable": "Pronuncie somente a sílaba como uma unidade sonora em português brasileiro; não soletre as letras."
+    "syllable": "Pronuncie somente a sílaba como uma unidade sonora em português brasileiro, com a vogal A aberta e clara; não soletre as letras."
   },
   "clips": {
     "menu_title": {
@@ -100,7 +100,7 @@
     "tutorial_choose_ca": {
       "display": "Escolha a sílaba CA.",
       "speech": "Escolha a sílaba CA.",
-      "synthesis": "Escolha a sílaba CA.",
+      "synthesis": "Escolha a sílaba cá.",
       "file": "res://audio/marin/tutorial_choose_ca.mp3",
       "category": "instruction"
     },
@@ -205,70 +205,70 @@
     "syllable_ca": {
       "display": "CA",
       "speech": "CA.",
-      "synthesis": "ca",
+      "synthesis": "cá.",
       "file": "res://audio/marin/syllable_ca.mp3",
       "category": "syllable"
     },
     "syllable_ba": {
       "display": "BA",
       "speech": "BA.",
-      "synthesis": "ba",
+      "synthesis": "bá.",
       "file": "res://audio/marin/syllable_ba.mp3",
       "category": "syllable"
     },
     "syllable_pa": {
       "display": "PA",
       "speech": "PA.",
-      "synthesis": "pa",
+      "synthesis": "pá.",
       "file": "res://audio/marin/syllable_pa.mp3",
       "category": "syllable"
     },
     "syllable_ga": {
       "display": "GA",
       "speech": "GA.",
-      "synthesis": "ga",
+      "synthesis": "gá.",
       "file": "res://audio/marin/syllable_ga.mp3",
       "category": "syllable"
     },
     "syllable_ma": {
       "display": "MA",
       "speech": "MA.",
-      "synthesis": "ma",
+      "synthesis": "má.",
       "file": "res://audio/marin/syllable_ma.mp3",
       "category": "syllable"
     },
     "syllable_ta": {
       "display": "TA",
       "speech": "TA.",
-      "synthesis": "ta",
+      "synthesis": "tá.",
       "file": "res://audio/marin/syllable_ta.mp3",
       "category": "syllable"
     },
     "syllable_la": {
       "display": "LA",
       "speech": "LA.",
-      "synthesis": "la",
+      "synthesis": "lá.",
       "file": "res://audio/marin/syllable_la.mp3",
       "category": "syllable"
     },
     "syllable_sa": {
       "display": "SA",
       "speech": "SA.",
-      "synthesis": "sa",
+      "synthesis": "sá.",
       "file": "res://audio/marin/syllable_sa.mp3",
       "category": "syllable"
     },
     "syllable_ra": {
       "display": "RA",
       "speech": "RA.",
-      "synthesis": "ra",
+      "synthesis": "rá.",
       "file": "res://audio/marin/syllable_ra.mp3",
       "category": "syllable"
     },
     "syllable_fa": {
       "display": "FA",
       "speech": "FA.",
-      "synthesis": "fa",
+      "synthesis": "fá.",
       "file": "res://audio/marin/syllable_fa.mp3",
       "category": "syllable"
     }
