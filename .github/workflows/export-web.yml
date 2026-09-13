@@ -39,6 +39,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Validate narration contract
+        shell: bash
+        run: |
+          python3 tools/validate_voice_contract.py
+
       - name: Download Godot 4.6
         shell: bash
         run: |
