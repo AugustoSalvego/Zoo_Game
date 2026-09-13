@@ -1,33 +1,35 @@
 #!/usr/bin/env python3
-"""Generate the complete Zoo-Game voice pack using OpenAI Marin.
+"""Generate the complete Zoo-Game voice pack with free local Kokoro TTS.
 
-The manifest is the single source of truth for visible text, spoken text, file
-paths, model, voice, speed, and style. The script intentionally generates the
-whole pack as one set so the game never mixes narrators.
+This replaces the paid OpenAI TTS generation path. Kokoro runs locally in the
+GitHub Actions runner, requires no API key and generates every clip with the
+same Brazilian Portuguese voice (pf_dora).
 
 Usage:
     python tools/generate_marin_audio.py --check
     python tools/generate_marin_audio.py
     python tools/generate_marin_audio.py --force
-
-Environment:
-    OPENAI_API_KEY must be set for generation. It is not needed for --check.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
+import subprocess
 import sys
-import time
-import urllib.error
-import urllib.request
+import tempfile
+
+import numpy as np
+import soundfile as sf
+from kokoro import KPipeline
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "audio" / "marin" / "manifest.json"
-API_URL = "https://api.openai.com/v1/audio/speech"
+SAMPLE_RATE = 24000
+LANG_CODE = "p"
+VOICE = "pf_dora"
+DEFAULT_SPEED = 0.92
 
 
 def load_manifest() -> dict:
@@ -41,7 +43,24 @@ def load_manifest() -> dict:
     if not isinstance(clips, dict) or not clips:
         raise RuntimeError("Voice manifest has no clips.")
 
+    # Keep repository metadata truthful after the free migration.
+    data["profile"] = {
+        "provider": "Kokoro",
+        "model": "hexgrad/Kokoro-82M",
+        "voice": VOICE,
+        "language": "pt-BR",
+        "response_format": "mp3",
+        "speed": DEFAULT_SPEED,
+        "license": "Apache-2.0",
+        "generation": "local/offline"
+    }
     return data
+
+
+def save_manifest(data: dict) -> None:
+    with MANIFEST_PATH.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, ensure_ascii=False, indent=2)
+        handle.write("\n")
 
 
 def project_path_to_local(project_path: str) -> Path:
@@ -97,82 +116,47 @@ def missing_files(data: dict) -> list[Path]:
     return sorted(path for path in paths if not path.is_file())
 
 
-def category_instructions(data: dict, category: str) -> str:
-    base = str(data["profile"].get("base_instructions", "")).strip()
-    category_text = str(data.get("category_instructions", {}).get(category, "")).strip()
-    return " ".join(part for part in (base, category_text) if part)
-
-
-def create_speech(
-    *,
-    api_key: str,
-    model: str,
-    voice: str,
+def synthesize_to_mp3(
+    pipeline: KPipeline,
     text: str,
-    instructions: str,
-    response_format: str,
+    output_path: Path,
     speed: float,
-    attempts: int = 5,
-) -> bytes:
-    payload = json.dumps(
-        {
-            "model": model,
-            "voice": voice,
-            "input": text,
-            "instructions": instructions,
-            "response_format": response_format,
-            "speed": speed,
-        },
-        ensure_ascii=False,
-    ).encode("utf-8")
+) -> None:
+    chunks = []
+    for result in pipeline(text, voice=VOICE, speed=speed):
+        audio = result.audio
+        if audio is None:
+            continue
+        if hasattr(audio, "detach"):
+            audio = audio.detach().cpu().numpy()
+        chunks.append(np.asarray(audio, dtype=np.float32))
 
-    request = urllib.request.Request(
-        API_URL,
-        data=payload,
-        method="POST",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "User-Agent": "Zoo-Game-Marin-Voice-Generator/1.0",
-        },
-    )
+    if not chunks:
+        raise RuntimeError(f"Kokoro returned no audio for: {text!r}")
 
-    for attempt in range(1, attempts + 1):
-        try:
-            with urllib.request.urlopen(request, timeout=120) as response:
-                return response.read()
-        except urllib.error.HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
-            if exc.code in (429, 500, 502, 503, 504) and attempt < attempts:
-                wait = min(2 ** attempt, 20)
-                print(f"API returned HTTP {exc.code}; retrying in {wait}s...")
-                time.sleep(wait)
-                continue
-            raise RuntimeError(f"OpenAI API HTTP {exc.code}: {body}") from exc
-        except urllib.error.URLError as exc:
-            if attempt < attempts:
-                wait = min(2 ** attempt, 20)
-                print(f"Network error; retrying in {wait}s: {exc}")
-                time.sleep(wait)
-                continue
-            raise RuntimeError(f"Network error while generating speech: {exc}") from exc
+    combined = np.concatenate(chunks)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    raise RuntimeError("Speech generation failed after all retries.")
+    with tempfile.TemporaryDirectory() as temp_dir:
+        wav_path = Path(temp_dir) / "clip.wav"
+        sf.write(wav_path, combined, SAMPLE_RATE, subtype="PCM_16")
+        subprocess.run(
+            [
+                "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
+                "-i", str(wav_path),
+                "-ar", str(SAMPLE_RATE),
+                "-ac", "1",
+                "-codec:a", "libmp3lame",
+                "-b:a", "96k",
+                str(output_path),
+            ],
+            check=True,
+        )
 
 
 def generate(data: dict, force: bool) -> None:
-    api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    if not api_key:
-        raise RuntimeError(
-            "OPENAI_API_KEY is not set. Do not paste the key into the project or chat; "
-            "set it as an environment variable or GitHub Actions secret."
-        )
-
-    profile = data["profile"]
-    model = str(profile["model"])
-    voice = str(profile["voice"])
-    response_format = str(profile.get("response_format", "mp3"))
-    speed = float(profile.get("speed", 1.0))
+    speed = float(data.get("profile", {}).get("speed", DEFAULT_SPEED))
+    pipeline = KPipeline(lang_code=LANG_CODE)
 
     jobs: dict[str, dict] = {}
     for key, entry in data["clips"].items():
@@ -191,32 +175,18 @@ def generate(data: dict, force: bool) -> None:
             skipped += 1
             continue
 
-        local_path.parent.mkdir(parents=True, exist_ok=True)
-        category = str(entry["category"])
-        synthesis_text = str(entry.get("synthesis", entry["speech"]))
-
+        synthesis_text = str(entry.get("synthesis", entry["speech"])).strip()
         print(
             f"[{index}/{len(jobs)}] GEN   {local_path.relative_to(ROOT)} "
             f"<- {entry['speech']}"
         )
-
-        audio_bytes = create_speech(
-            api_key=api_key,
-            model=model,
-            voice=voice,
-            text=synthesis_text,
-            instructions=category_instructions(data, category),
-            response_format=response_format,
-            speed=speed,
-        )
-
-        temp_path = local_path.with_suffix(local_path.suffix + ".tmp")
-        temp_path.write_bytes(audio_bytes)
-        temp_path.replace(local_path)
+        synthesize_to_mp3(pipeline, synthesis_text, local_path, speed)
         generated += 1
-        time.sleep(0.12)
 
-    print(f"Done. Generated: {generated}; kept: {skipped}; unique clips: {len(jobs)}.")
+    print(
+        f"Done. Generated: {generated}; kept: {skipped}; "
+        f"unique clips: {len(jobs)}; voice: {VOICE}."
+    )
 
 
 def main() -> int:
@@ -224,17 +194,18 @@ def main() -> int:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Regenerate and overwrite every existing Marin clip.",
+        help="Regenerate and overwrite every existing voice clip.",
     )
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Validate manifest and report missing Marin audio files without API calls.",
+        help="Validate manifest and report missing audio files.",
     )
     args = parser.parse_args()
 
     data = load_manifest()
     validate_manifest(data)
+    save_manifest(data)
 
     if args.check:
         missing = missing_files(data)
@@ -245,7 +216,8 @@ def main() -> int:
             return 2
         print(
             f"Voice pack OK: {len(data['clips'])} semantic entries, "
-            f"{len({entry['file'] for entry in data['clips'].values()})} unique audio files."
+            f"{len({entry['file'] for entry in data['clips'].values()})} unique audio files, "
+            f"voice {VOICE}."
         )
         return 0
 
@@ -256,7 +228,7 @@ def main() -> int:
         print(f"ERROR: generation finished with {len(missing)} files still missing.")
         return 3
 
-    print("Complete Marin voice pack is present.")
+    print("Complete free Kokoro voice pack is present.")
     return 0
 
 
