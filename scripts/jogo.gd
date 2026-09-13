@@ -288,11 +288,11 @@ func anunciar_fase(id: int, indice_fase: int) -> void:
 
 
 func repetir_instrucao() -> void:
-	if fase_atual >= fases.size():
-		repetir_final()
+	if respondendo:
 		return
 
-	if respondendo:
+	if fase_atual >= fases.size():
+		repetir_final()
 		return
 
 	anunciar_nome_animal_interativo()
@@ -394,26 +394,37 @@ func finalizar_jogo() -> void:
 	btn3.hide()
 	btn_reiniciar.show()
 	btn_menu_final.show()
+	btn_reiniciar.disabled = true
+	btn_menu_final.disabled = true
 
 	estilizar_painel(caixa_palavra, Color(0.72, 1.0, 0.62))
 	criar_confetes()
 
-	# While the Marin pack is not complete, use the existing combined legacy
-	# recording. Once Marin is ready, each visible final phrase gets its exact
-	# matching dedicated clip.
+	# Keep final actions locked until the announcement finishes. This prevents
+	# a button press from interrupting one clip and accidentally starting the
+	# next clip from the old final-screen coroutine.
 	if audio.is_marin_ready():
 		await audio.speak_and_wait("final_title", 0.8)
 		await audio.speak_and_wait("final_complete", 2.0)
 	else:
-		audio.play_voice("final_complete")
+		await audio.speak_and_wait("final_complete", 2.4)
+
+	respondendo = false
+	btn_reiniciar.disabled = false
+	btn_menu_final.disabled = false
 
 
 func repetir_final() -> void:
+	if respondendo:
+		return
+
+	respondendo = true
 	if audio.is_marin_ready():
 		await audio.speak_and_wait("final_title", 0.8)
 		await audio.speak_and_wait("final_complete", 2.0)
 	else:
-		audio.play_voice("final_complete")
+		await audio.speak_and_wait("final_complete", 2.4)
+	respondendo = false
 
 
 func criar_confetes() -> void:
@@ -433,7 +444,7 @@ func criar_confetes() -> void:
 
 
 func reiniciar_jogo_com_audio() -> void:
-	if fase_atual < fases.size():
+	if respondendo or fase_atual < fases.size():
 		return
 
 	btn_reiniciar.disabled = true
@@ -519,6 +530,10 @@ func voltar_menu_com_audio() -> void:
 
 
 func voltar_menu_final_com_audio() -> void:
+	if respondendo:
+		return
+
+	respondendo = true
 	btn_reiniciar.disabled = true
 	btn_menu_final.disabled = true
 
