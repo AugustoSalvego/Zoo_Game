@@ -112,7 +112,6 @@ func criar_interface() -> void:
 	btn_ba.pressed.connect(func(): verificar_tutorial("BA"))
 	btn_pa.pressed.connect(func(): verificar_tutorial("PA"))
 
-
 	btn_skip = Button.new()
 	btn_skip.text = "PULAR"
 	btn_skip.set_anchors_preset(Control.PRESET_TOP_LEFT)
@@ -172,47 +171,52 @@ func criar_interface() -> void:
 	volume_slider.value_changed.connect(_on_volume_changed)
 	volume_panel.add_child(volume_slider)
 
-	pointer = criar_seta_indicadora()
+	pointer = criar_cursor_guia()
 	pointer.visible = false
 	add_child(pointer)
 
 func executar_tutorial() -> void:
 	bloquear_opcoes(true)
 	await falar_e_mostrar("tutorial_welcome", "Vamos aprender a jogar!", 2.2)
-	if not tutorial_ativo: return
+	if not tutorial_ativo:
+		return
 
+	# O guia visual substitui frases artificiais: primeiro chama atenção para o animal.
 	destacar(animal_panel, Color(1.0, 0.95, 0.55))
-	await falar_e_mostrar("tutorial_look_animal", "Olhe o animal.", 1.5)
-	if not tutorial_ativo: return
-	await audio.play_word_and_wait("CACHORRO", 1.1)
-	if not tutorial_ativo: return
+	await get_tree().create_timer(0.9).timeout
+	if not tutorial_ativo:
+		return
 
+	# Depois mostra claramente a palavra incompleta.
 	destacar(animal_panel, Color(0.82, 0.95, 0.82))
 	destacar(word_panel, Color(1.0, 0.95, 0.55))
-	await falar_e_mostrar("tutorial_word_missing", "Uma parte da palavra está faltando.", 2.2)
-	if not tutorial_ativo: return
+	await get_tree().create_timer(0.9).timeout
+	if not tutorial_ativo:
+		return
 
+	# Por fim o cursor aponta para CA e a sílaba é pronunciada com o áudio real do NinoEdu.
+	destacar(word_panel, Color.WHITE)
 	bloquear_opcoes(false)
 	destacar_botao(btn_ca)
-	posicionar_seta()
+	posicionar_cursor()
 	pointer.visible = true
-	animar_seta()
-	await falar_e_mostrar("tutorial_choose_ca", "Escolha a sílaba CA.", 1.8)
-	if not tutorial_ativo: return
+	animar_cursor()
+	instruction_label.text = "CA"
+	current_voice_key = "syllable_CA"
 	await audio.play_syllable_and_wait("CA", 0.7)
-	if not tutorial_ativo: return
+	if not tutorial_ativo:
+		return
 
-	instruction_label.text = "Agora clique em CA."
-	current_voice_key = "tutorial_click_ca"
-	audio.play_voice(current_voice_key)
 	await tutorial_correct_choice
-	if not tutorial_ativo: return
+	if not tutorial_ativo:
+		return
 
 	pointer.visible = false
 	word_label.text = "CACHORRO"
 	destacar(word_panel, Color(0.65, 1.0, 0.55))
 	await falar_e_mostrar("feedback_correct", "Parabéns!", 1.8)
-	if not tutorial_ativo: return
+	if not tutorial_ativo:
+		return
 
 	await falar_e_mostrar("tutorial_your_turn", "Agora é sua vez!", 1.8)
 	if tutorial_ativo:
@@ -228,12 +232,12 @@ func verificar_tutorial(resposta: String) -> void:
 		pointer.visible = false
 		tutorial_correct_choice.emit()
 	else:
-		instruction_label.text = "Tente outra vez. Procure CA."
+		instruction_label.text = "Tente outra vez."
 		current_voice_key = "feedback_try_again"
 		await audio.speak_and_wait(current_voice_key, 1.2)
 		if tutorial_ativo:
 			destacar_botao(btn_ca)
-			posicionar_seta()
+			posicionar_cursor()
 			pointer.visible = true
 
 func repetir_instrucao() -> void:
@@ -293,39 +297,51 @@ func aplicar_estado_botao(botao: Button, cor: Color) -> void:
 	botao.add_theme_stylebox_override("pressed", pressed)
 	botao.add_theme_stylebox_override("disabled", disabled)
 
-func criar_seta_indicadora() -> Control:
+func criar_cursor_guia() -> Control:
 	var holder := Control.new()
-	holder.size = Vector2(62, 74)
+	holder.size = Vector2(68, 88)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var shadow := Polygon2D.new()
-	shadow.polygon = PackedVector2Array([
-		Vector2(26, 6), Vector2(38, 6), Vector2(38, 41),
-		Vector2(54, 41), Vector2(32, 68), Vector2(10, 41), Vector2(26, 41)
+	holder.pivot_offset = holder.size / 2.0
+
+	var forma := PackedVector2Array([
+		Vector2(4, 3), Vector2(4, 67), Vector2(20, 52),
+		Vector2(33, 81), Vector2(48, 74), Vector2(35, 46),
+		Vector2(61, 45)
 	])
-	shadow.color = Color(0.05, 0.05, 0.03, 0.48)
-	holder.add_child(shadow)
-	var seta := Polygon2D.new()
-	seta.polygon = PackedVector2Array([
-		Vector2(21, 0), Vector2(33, 0), Vector2(33, 35),
-		Vector2(49, 35), Vector2(27, 62), Vector2(5, 35), Vector2(21, 35)
-	])
-	seta.color = Color(1.0, 0.78, 0.10)
-	holder.add_child(seta)
+
+	var sombra := Polygon2D.new()
+	sombra.polygon = forma
+	sombra.position = Vector2(6, 7)
+	sombra.color = Color(0, 0, 0, 0.30)
+	holder.add_child(sombra)
+
+	var contorno := Polygon2D.new()
+	contorno.polygon = forma
+	contorno.color = Color(0.08, 0.08, 0.08, 1.0)
+	holder.add_child(contorno)
+
+	var preenchimento := Polygon2D.new()
+	preenchimento.polygon = forma
+	preenchimento.position = Vector2(3, 3)
+	preenchimento.scale = Vector2(0.88, 0.88)
+	preenchimento.color = Color.WHITE
+	holder.add_child(preenchimento)
 	return holder
 
-func posicionar_seta() -> void:
+func posicionar_cursor() -> void:
 	if pointer == null or btn_ca == null:
 		return
-	pointer.position = btn_ca.position + Vector2((btn_ca.size.x - pointer.size.x) / 2.0, -78)
+	pointer.position = btn_ca.position + Vector2(btn_ca.size.x * 0.58, btn_ca.size.y * 0.34)
 
-func animar_seta() -> void:
+func animar_cursor() -> void:
 	if pointer == null:
 		return
+	pointer.scale = Vector2.ONE
 	var tween := create_tween().set_loops()
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(pointer, "position:y", pointer.position.y + 10.0, 0.45)
-	tween.tween_property(pointer, "position:y", pointer.position.y, 0.45)
+	tween.tween_property(pointer, "scale", Vector2(0.92, 0.92), 0.35)
+	tween.tween_property(pointer, "scale", Vector2.ONE, 0.35)
 
 func _on_animal_panel_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
