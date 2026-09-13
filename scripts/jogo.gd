@@ -53,7 +53,6 @@ func _ready() -> void:
 	btn3.pressed.connect(func(): verificar_resposta(btn3, btn3.text))
 	btn_reiniciar.pressed.connect(reiniciar_jogo)
 
-
 	btn_reiniciar.hide()
 	carregar_fase(true)
 
@@ -150,10 +149,12 @@ func criar_controles_acessibilidade() -> void:
 
 	btn_ajuda = criar_botao_topo("?", Vector2(124, 24))
 	btn_ajuda.pressed.connect(abrir_tutorial)
+	btn_ajuda.tooltip_text = "Como jogar"
 	btn_ajuda.mouse_entered.connect(func(): audio.play_voice("ui_help"))
 
 	btn_repetir = criar_botao_topo("🔊", Vector2(224, 24))
 	btn_repetir.pressed.connect(repetir_instrucao)
+	btn_repetir.tooltip_text = "Ouvir o nome do animal novamente"
 
 	btn_volume = Button.new()
 	btn_volume.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -225,7 +226,7 @@ func carregar_fase(novas_opcoes: bool = true) -> void:
 	btn_reiniciar.hide()
 	btn_menu_final.hide()
 	lbl_palavra.text = fase["incompleto"]
-	instruction_label.text = "Escolha a sílaba que completa o nome."
+	instruction_label.text = ""
 	estilizar_painel(caixa_palavra, Color.WHITE)
 	img_animal.texture = load(fase["imagem"])
 	atualizar_progresso()
@@ -249,9 +250,6 @@ func anunciar_fase() -> void:
 		return
 	var fase = fases[fase_atual]
 	await audio.play_word_and_wait(fase["animal"], 1.0)
-	if fase_atual >= fases.size():
-		return
-	await audio.speak_and_wait("instruction_choose_syllable", 1.6)
 
 func repetir_instrucao() -> void:
 	if fase_atual >= fases.size():
