@@ -1,0 +1,52 @@
+name: Generate Marin Voice Pack
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-marin-audio:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Verify API key secret
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Repository secret OPENAI_API_KEY is not configured."
+            exit 1
+          fi
+
+      - name: Generate complete Marin voice pack
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python3 tools/generate_marin_audio.py --force
+          python3 tools/generate_marin_audio.py --check
+
+      - name: Commit generated voice assets
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add audio/marin/*.mp3
+
+          if git diff --cached --quiet; then
+            echo "Marin voice pack is already up to date."
+            exit 0
+          fi
+
+          git commit -m "audio: generate complete Marin voice pack"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
