@@ -13,6 +13,16 @@ on:
       - "index.audio.worklet.js"
       - "index.icon.png"
       - "index.apple-touch-icon.png"
+  pull_request:
+    paths-ignore:
+      - "index.html"
+      - "index.js"
+      - "index.pck"
+      - "index.wasm"
+      - "index.audio.position.worklet.js"
+      - "index.audio.worklet.js"
+      - "index.icon.png"
+      - "index.apple-touch-icon.png"
   workflow_dispatch:
 
 permissions:
@@ -57,6 +67,7 @@ jobs:
           ./Godot_v4.6-stable_linux.x86_64 --headless --path . --export-release "Web" index.html
 
       - name: Commit updated Web export
+        if: github.event_name == 'push'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
