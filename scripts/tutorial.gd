@@ -331,7 +331,8 @@ func criar_cursor_guia() -> Control:
 func posicionar_cursor() -> void:
 	if pointer == null or btn_ca == null:
 		return
-	pointer.position = btn_ca.position + Vector2(btn_ca.size.x * 0.58, btn_ca.size.y * 0.34)
+	# Mantém a ponta do cursor tocando a lateral direita, sem cobrir a sílaba CA.
+	pointer.position = btn_ca.position + Vector2(btn_ca.size.x - 10.0, btn_ca.size.y * 0.40)
 
 func animar_cursor() -> void:
 	if pointer == null:
