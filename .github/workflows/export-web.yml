@@ -13,6 +13,9 @@ on:
       - "index.audio.worklet.js"
       - "index.icon.png"
       - "index.apple-touch-icon.png"
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -57,6 +60,7 @@ jobs:
           ./Godot_v4.6-stable_linux.x86_64 --headless --path . --export-release "Web" index.html
 
       - name: Commit updated Web export
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
