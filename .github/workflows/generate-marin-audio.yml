@@ -1,4 +1,4 @@
-name: Generate Marin Voice Pack
+name: Generate Free Kokoro Voice Pack
 
 on:
   workflow_dispatch:
@@ -7,30 +7,27 @@ permissions:
   contents: write
 
 jobs:
-  generate-marin-audio:
+  generate-kokoro-audio:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout selected branch
+      - name: Checkout audio branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: fix/preserve-original-polish
           fetch-depth: 0
 
-      - name: Verify API key secret
+      - name: Install free local TTS dependencies
         shell: bash
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "::error::Repository secret OPENAI_API_KEY is not configured."
-            exit 1
-          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq espeak-ng ffmpeg
+          python3 -m pip install --upgrade pip
+          python3 -m pip install "kokoro>=0.9.4" soundfile numpy
 
-      - name: Generate complete Marin voice pack
+      - name: Generate complete Kokoro pt-BR voice pack
         shell: bash
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python3 tools/generate_marin_audio.py --force
           python3 tools/generate_marin_audio.py --check
@@ -41,12 +38,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add audio/marin/*.mp3
+          git add audio/marin/manifest.json audio/marin/*.mp3
 
           if git diff --cached --quiet; then
-            echo "Marin voice pack is already up to date."
+            echo "Kokoro voice pack is already up to date."
             exit 0
           fi
 
-          git commit -m "audio: generate complete Marin voice pack"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git commit -m "audio: generate complete free Kokoro pt-BR voice pack"
+          git push origin "HEAD:fix/preserve-original-polish"
