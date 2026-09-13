@@ -7,6 +7,8 @@ const NINO_A_BASE := "https://raw.githubusercontent.com/RafaelTomazGraciano/nino
 const NINO_O_WORDS_BASE := "https://raw.githubusercontent.com/RafaelTomazGraciano/ninoedu/main/assets/Vogal_O/AudiosPalavras/"
 const LIGUE_AUDIO_BASE := "https://raw.githubusercontent.com/RafaelTomazGraciano/ligue-as-silabas/main/assets/audios/"
 
+# Falas existentes no padrão dos jogos NinoEdu. Os textos exibidos no jogo
+# são mantidos equivalentes a estas falas.
 const REMOTE_VOICES := {
 	"menu_play": LIGUE_AUDIO_BASE + "jogar.ogg",
 	"menu_how_to_play": LIGUE_AUDIO_BASE + "como_jogar.ogg",
@@ -20,6 +22,18 @@ const REMOTE_VOICES := {
 	"tutorial_your_turn": LIGUE_AUDIO_BASE + "como_jogar/sua_vez.ogg"
 }
 
+# Frases próprias do Zoológico. São arquivos locais para que a frase falada
+# seja sempre exatamente a mesma que aparece na tela e funcione também no Web.
+const LOCAL_VOICE_PATHS := {
+	"tutorial_look_animal": "res://audio/voice/tutorial_look_animal.ogg",
+	"tutorial_word_missing": "res://audio/voice/tutorial_word_missing.ogg",
+	"tutorial_choose_ca": "res://audio/voice/tutorial_choose_ca.ogg",
+	"instruction_choose_syllable": "res://audio/voice/instruction_choose_syllable.ogg",
+	"final_congratulations": "res://audio/voice/final_congratulations.ogg",
+	"final_play_again": "res://audio/voice/final_play_again.ogg",
+	"final_back_menu": "res://audio/voice/final_back_menu.ogg"
+}
+
 const FALLBACK_TEXTS := {
 	"menu_play": "Jogar.",
 	"menu_how_to_play": "Como jogar.",
@@ -28,14 +42,21 @@ const FALLBACK_TEXTS := {
 	"ui_help": "Como jogar.",
 	"ui_skip": "Pular tutorial.",
 	"ui_repeat": "Ouvir novamente.",
+	"tutorial_welcome": "Vamos aprender a jogar!",
 	"tutorial_look_animal": "Olhe o animal.",
 	"tutorial_word_missing": "Uma parte da palavra está faltando.",
 	"tutorial_choose_ca": "Escolha a sílaba CA.",
-	"tutorial_click_ca": "Agora clique em CA.",
+	"feedback_correct": "Você acertou!",
+	"feedback_try_again": "Tente outra vez.",
+	"tutorial_your_turn": "Sua vez!",
 	"instruction_choose_syllable": "Escolha a sílaba que completa o nome.",
-	"final_congratulations": "Parabéns! Você completou o Zoológico das Sílabas."
+	"final_congratulations": "Parabéns! Você completou o Zoológico das Sílabas!",
+	"final_play_again": "Jogar de novo.",
+	"final_back_menu": "Voltar ao menu."
 }
 
+# Todos os nomes dos animais usam arquivos locais gravados/gerados com a mesma
+# voz. Isso evita a troca perceptível de voz entre uma fase e outra.
 const LOCAL_WORD_PATHS := {
 	"CACHORRO": "res://audio/words/cachorro.ogg",
 	"GATO": "res://audio/words/gato.ogg",
@@ -46,6 +67,7 @@ const LOCAL_WORD_PATHS := {
 	"TARTARUGA": "res://audio/words/tartaruga.ogg"
 }
 
+# Mantido somente como fallback caso um arquivo local de palavra seja removido.
 const NINO_WORD_URLS := {
 	"GATO": NINO_O_WORDS_BASE + "gato.ogg",
 	"MACACO": NINO_O_WORDS_BASE + "macaco.ogg",
@@ -97,16 +119,32 @@ func is_muted() -> bool:
 	return load_saved_volume() <= 0.001
 
 func play_voice(key: String) -> bool:
+	var local_stream := _get_local_voice_stream(key)
+	if local_stream != null:
+		_stop_spoken_audio()
+		voice_player.stream = local_stream
+		voice_player.play()
+		return true
+
 	var url := str(REMOTE_VOICES.get(key, ""))
 	if not url.is_empty():
 		_play_remote_nonblocking("voice:" + key, url, voice_player, key)
 		return true
+
 	var text := str(FALLBACK_TEXTS.get(key, ""))
 	if not text.is_empty():
 		return speak_text(text)
 	return false
 
 func speak_and_wait(key: String, fallback_seconds: float = 1.2) -> void:
+	var local_stream := _get_local_voice_stream(key)
+	if local_stream != null:
+		_stop_spoken_audio()
+		voice_player.stream = local_stream
+		voice_player.play()
+		await voice_player.finished
+		return
+
 	var url := str(REMOTE_VOICES.get(key, ""))
 	if not url.is_empty():
 		var stream := await _fetch_stream("voice:" + key, url)
@@ -116,6 +154,7 @@ func speak_and_wait(key: String, fallback_seconds: float = 1.2) -> void:
 			voice_player.play()
 			await voice_player.finished
 			return
+
 	var text := str(FALLBACK_TEXTS.get(key, ""))
 	if not text.is_empty():
 		speak_text(text)
@@ -175,6 +214,12 @@ func play_word_and_wait(word: String, fallback_seconds: float = 1.0) -> void:
 			return
 	speak_text(word.capitalize())
 	await get_tree().create_timer(fallback_seconds).timeout
+
+func _get_local_voice_stream(key: String) -> AudioStream:
+	var path := str(LOCAL_VOICE_PATHS.get(key, ""))
+	if path.is_empty() or not ResourceLoader.exists(path):
+		return null
+	return load(path) as AudioStream
 
 func _get_local_word_stream(normalized_word: String) -> AudioStream:
 	var path := str(LOCAL_WORD_PATHS.get(normalized_word, ""))
