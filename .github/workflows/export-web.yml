@@ -59,6 +59,23 @@ jobs:
         run: |
           ./Godot_v4.6-stable_linux.x86_64 --headless --path . --export-release "Web" index.html
 
+      - name: Upload Web preview
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: zoo-game-web-preview
+          path: |
+            index.html
+            index.js
+            index.pck
+            index.wasm
+            index.audio.position.worklet.js
+            index.audio.worklet.js
+            index.icon.png
+            index.apple-touch-icon.png
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Commit updated Web export
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
