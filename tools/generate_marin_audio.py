@@ -29,7 +29,8 @@ MANIFEST_PATH = ROOT / "audio" / "marin" / "manifest.json"
 SAMPLE_RATE = 24000
 LANG_CODE = "p"
 VOICE = "pf_dora"
-DEFAULT_SPEED = 0.92
+DEFAULT_SPEED = 0.90
+SYLLABLE_SPEED = 0.83
 
 
 def load_manifest() -> dict:
@@ -176,11 +177,13 @@ def generate(data: dict, force: bool) -> None:
             continue
 
         synthesis_text = str(entry.get("synthesis", entry["speech"])).strip()
+        category = str(entry.get("category", "")).strip()
+        clip_speed = SYLLABLE_SPEED if category == "syllable" else speed
         print(
             f"[{index}/{len(jobs)}] GEN   {local_path.relative_to(ROOT)} "
-            f"<- {entry['speech']}"
+            f"<- {entry['speech']} @ {clip_speed:.2f}x"
         )
-        synthesize_to_mp3(pipeline, synthesis_text, local_path, speed)
+        synthesize_to_mp3(pipeline, synthesis_text, local_path, clip_speed)
         generated += 1
 
     print(

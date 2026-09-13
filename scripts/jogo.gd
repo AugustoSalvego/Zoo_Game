@@ -273,6 +273,7 @@ func anunciar_fase(id: int, indice_fase: int) -> void:
 
 	instruction_label.text = audio.get_word_display(animal)
 	await audio.play_word_and_wait(animal, 1.0)
+	await get_tree().create_timer(0.30).timeout
 
 	if indice_fase != fase_atual or id != anuncio_id:
 		return
@@ -324,7 +325,7 @@ func verificar_resposta(botao_escolhido: Button, resposta: String) -> void:
 		instruction_label.text = audio.get_word_display(animal)
 		await audio.play_word_and_wait(animal, 1.0)
 
-		await get_tree().create_timer(0.35).timeout
+		await get_tree().create_timer(0.65).timeout
 		fase_atual += 1
 		opcoes_atuais.clear()
 		carregar_fase(true)
@@ -336,7 +337,7 @@ func verificar_resposta(botao_escolhido: Button, resposta: String) -> void:
 	estilizar_painel(caixa_palavra, Color(1.0, 0.76, 0.72))
 
 	await audio.speak_and_wait("feedback_try_again", 1.25)
-	await get_tree().create_timer(0.20).timeout
+	await get_tree().create_timer(0.45).timeout
 
 	lbl_palavra.text = str(fase["incompleto"])
 	instruction_label.text = ""
@@ -405,6 +406,7 @@ func finalizar_jogo() -> void:
 	# next clip from the old final-screen coroutine.
 	if audio.is_marin_ready():
 		await audio.speak_and_wait("final_title", 0.8)
+		await get_tree().create_timer(0.30).timeout
 		await audio.speak_and_wait("final_complete", 2.0)
 	else:
 		await audio.speak_and_wait("final_complete", 2.4)
@@ -421,6 +423,7 @@ func repetir_final() -> void:
 	respondendo = true
 	if audio.is_marin_ready():
 		await audio.speak_and_wait("final_title", 0.8)
+		await get_tree().create_timer(0.30).timeout
 		await audio.speak_and_wait("final_complete", 2.0)
 	else:
 		await audio.speak_and_wait("final_complete", 2.4)

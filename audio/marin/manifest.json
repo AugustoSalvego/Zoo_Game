@@ -6,7 +6,7 @@
     "voice": "pf_dora",
     "language": "pt-BR",
     "response_format": "mp3",
-    "speed": 0.90,
+    "speed": 0.9,
     "license": "Apache-2.0",
     "generation": "local/offline"
   },

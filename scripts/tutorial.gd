@@ -222,6 +222,7 @@ func executar_tutorial() -> void:
 	instruction_label.text = audio.get_word_display("CACHORRO")
 	tutorial_narrating = true
 	await audio.play_word_and_wait("CACHORRO", 1.0)
+	await get_tree().create_timer(0.30).timeout
 	tutorial_narrating = false
 	if not tutorial_ativo:
 		return
@@ -278,6 +279,7 @@ func falar_e_mostrar(key: String, fallback_seconds: float) -> void:
 	instruction_label.text = audio.get_display_text(key)
 	tutorial_narrating = true
 	await audio.speak_and_wait(key, fallback_seconds)
+	await get_tree().create_timer(0.30).timeout
 	tutorial_narrating = false
 
 
