@@ -122,6 +122,7 @@ func criar_interface() -> void:
 	estilizar_botao_pequeno(btn_skip)
 	btn_skip.pressed.connect(finalizar_tutorial)
 	btn_skip.mouse_entered.connect(func(): audio.play_voice("ui_skip"))
+	btn_skip.focus_entered.connect(func(): audio.play_voice("ui_skip"))
 	add_child(btn_skip)
 
 	btn_repeat = Button.new()
@@ -146,6 +147,7 @@ func criar_interface() -> void:
 	atualizar_icone_volume()
 	btn_volume.pressed.connect(toggle_volume_panel)
 	btn_volume.mouse_entered.connect(func(): audio.play_voice("ui_volume"))
+	btn_volume.focus_entered.connect(func(): audio.play_voice("ui_volume"))
 	add_child(btn_volume)
 
 	volume_panel = Panel.new()
@@ -181,29 +183,24 @@ func executar_tutorial() -> void:
 	if not tutorial_ativo:
 		return
 
-	# O guia visual substitui frases artificiais: primeiro chama atenção para o animal.
 	destacar(animal_panel, Color(1.0, 0.95, 0.55))
-	await get_tree().create_timer(0.9).timeout
+	await falar_e_mostrar("tutorial_look_animal", "Olhe o animal.", 1.2)
 	if not tutorial_ativo:
 		return
 
-	# Depois mostra claramente a palavra incompleta.
 	destacar(animal_panel, Color(0.82, 0.95, 0.82))
 	destacar(word_panel, Color(1.0, 0.95, 0.55))
-	await get_tree().create_timer(0.9).timeout
+	await falar_e_mostrar("tutorial_word_missing", "Uma parte da palavra está faltando.", 2.0)
 	if not tutorial_ativo:
 		return
 
-	# Por fim o cursor aponta para CA e a sílaba é pronunciada com o áudio real do NinoEdu.
 	destacar(word_panel, Color.WHITE)
 	bloquear_opcoes(false)
 	destacar_botao(btn_ca)
 	posicionar_cursor()
 	pointer.visible = true
 	animar_cursor()
-	instruction_label.text = "CA"
-	current_voice_key = "syllable_CA"
-	await audio.play_syllable_and_wait("CA", 0.7)
+	await falar_e_mostrar("tutorial_choose_ca", "Escolha a sílaba CA.", 1.7)
 	if not tutorial_ativo:
 		return
 
@@ -214,11 +211,18 @@ func executar_tutorial() -> void:
 	pointer.visible = false
 	word_label.text = "CACHORRO"
 	destacar(word_panel, Color(0.65, 1.0, 0.55))
-	await falar_e_mostrar("feedback_correct", "Parabéns!", 1.8)
+	await falar_e_mostrar("feedback_correct", "Você acertou!", 1.5)
 	if not tutorial_ativo:
 		return
 
-	await falar_e_mostrar("tutorial_your_turn", "Agora é sua vez!", 1.8)
+	# A palavra mostrada e a palavra falada são exatamente o mesmo conteúdo.
+	instruction_label.text = "CACHORRO"
+	current_voice_key = "word_CACHORRO"
+	await audio.play_word_and_wait("CACHORRO", 1.0)
+	if not tutorial_ativo:
+		return
+
+	await falar_e_mostrar("tutorial_your_turn", "Sua vez!", 1.5)
 	if tutorial_ativo:
 		finalizar_tutorial()
 
@@ -239,9 +243,13 @@ func verificar_tutorial(resposta: String) -> void:
 			destacar_botao(btn_ca)
 			posicionar_cursor()
 			pointer.visible = true
+			instruction_label.text = "Escolha a sílaba CA."
+			current_voice_key = "tutorial_choose_ca"
 
 func repetir_instrucao() -> void:
-	if current_voice_key.begins_with("syllable_"):
+	if current_voice_key.begins_with("word_"):
+		audio.play_word(current_voice_key.trim_prefix("word_"))
+	elif current_voice_key.begins_with("syllable_"):
 		audio.play_syllable(current_voice_key.trim_prefix("syllable_").to_upper())
 	else:
 		audio.play_voice(current_voice_key)
@@ -274,6 +282,8 @@ func criar_opcao(texto: String, deslocamento_x: float) -> Button:
 	botao.offset_right = deslocamento_x + 115
 	botao.offset_bottom = 405
 	estilizar_botao(botao)
+	botao.mouse_entered.connect(func(): audio.play_syllable(texto))
+	botao.focus_entered.connect(func(): audio.play_syllable(texto))
 	add_child(botao)
 	return botao
 
@@ -346,8 +356,12 @@ func animar_cursor() -> void:
 
 func _on_animal_panel_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		instruction_label.text = "CACHORRO"
+		current_voice_key = "word_CACHORRO"
 		audio.play_word("CACHORRO")
 	elif event is InputEventScreenTouch and event.pressed:
+		instruction_label.text = "CACHORRO"
+		current_voice_key = "word_CACHORRO"
 		audio.play_word("CACHORRO")
 
 func toggle_volume_panel() -> void:
