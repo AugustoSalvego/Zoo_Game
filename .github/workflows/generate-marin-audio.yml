@@ -18,6 +18,11 @@ jobs:
           ref: fix/preserve-original-polish
           fetch-depth: 0
 
+      - name: Apply pronunciation and pacing refinements
+        shell: bash
+        run: |
+          python3 tools/apply_kokoro_refinements.py
+
       - name: Install free local TTS dependencies
         shell: bash
         run: |
@@ -32,18 +37,23 @@ jobs:
           python3 tools/generate_marin_audio.py --force
           python3 tools/generate_marin_audio.py --check
 
-      - name: Commit generated voice assets
+      - name: Commit refined game flow and voice assets
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add audio/marin/manifest.json audio/marin/*.mp3
+          git add \
+            audio/marin/manifest.json \
+            audio/marin/*.mp3 \
+            tools/generate_marin_audio.py \
+            scripts/tutorial.gd \
+            scripts/jogo.gd
 
           if git diff --cached --quiet; then
-            echo "Kokoro voice pack is already up to date."
+            echo "Kokoro voice pack and pacing are already up to date."
             exit 0
           fi
 
-          git commit -m "audio: generate complete free Kokoro pt-BR voice pack"
+          git commit -m "audio: refine Kokoro syllables and game pacing"
           git push origin "HEAD:fix/preserve-original-polish"
