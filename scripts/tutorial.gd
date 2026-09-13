@@ -1,277 +1,273 @@
 extends Control
 
+signal tutorial_correct_choice
+
 const AccessibilityAudio = preload("res://scripts/accessibility_audio.gd")
 const SETTINGS_PATH := "user://zoo_settings.cfg"
 
-var audio: AccessibilityAudio
+var audio
+var tutorial_ativo := true
+var current_voice_key := "tutorial_welcome"
+
+var fundo: TextureRect
+var instruction_panel: Panel
+var instruction_label: Label
+var animal_panel: Panel
+var animal_image: TextureRect
+var word_panel: Panel
 var word_label: Label
-var feedback_label: Label
-var option_buttons: Array[Button] = []
-var start_button: Button
-var sound_button: Button
-var completed := false
+var btn_ca: Button
+var btn_ba: Button
+var btn_pa: Button
+var btn_skip: Button
+var btn_repeat: Button
+var btn_volume: Button
+var volume_panel: Panel
+var volume_slider: HSlider
 
 func _ready() -> void:
 	audio = AccessibilityAudio.new()
 	add_child(audio)
-	_build_interface()
+	criar_interface()
+	await get_tree().process_frame
+	executar_tutorial()
 
-func _build_interface() -> void:
-	var background := TextureRect.new()
-	background.texture = load("res://img/fundo_jogo.png")
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(background)
+func criar_interface() -> void:
+	var tela := get_viewport_rect().size
 
-	var shade := ColorRect.new()
-	shade.color = Color(0.06, 0.15, 0.10, 0.14)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(shade)
+	fundo = TextureRect.new()
+	fundo.texture = load("res://img/fundo_jogo.png")
+	fundo.position = Vector2.ZERO
+	fundo.size = tela
+	fundo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	fundo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	add_child(fundo)
 
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 30)
-	margin.add_theme_constant_override("margin_top", 22)
-	margin.add_theme_constant_override("margin_right", 30)
-	margin.add_theme_constant_override("margin_bottom", 22)
-	add_child(margin)
+	instruction_panel = Panel.new()
+	instruction_panel.size = Vector2(900, 96)
+	instruction_panel.position = Vector2((tela.x - 900) / 2.0, 24)
+	estilizar_painel(instruction_panel, Color(1, 1, 1, 0.96))
+	add_child(instruction_panel)
 
-	var root := VBoxContainer.new()
-	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_theme_constant_override("separation", 18)
-	margin.add_child(root)
+	instruction_label = Label.new()
+	instruction_label.size = instruction_panel.size
+	instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	instruction_label.add_theme_font_size_override("font_size", 34)
+	instruction_label.add_theme_color_override("font_color", Color.BLACK)
+	instruction_panel.add_child(instruction_label)
 
-	var top_bar := HBoxContainer.new()
-	top_bar.custom_minimum_size.y = 58
-	top_bar.add_theme_constant_override("separation", 12)
-	root.add_child(top_bar)
+	animal_panel = Panel.new()
+	animal_panel.size = Vector2(420, 420)
+	animal_panel.position = Vector2((tela.x - 420) / 2.0, 150)
+	estilizar_painel(animal_panel, Color(0.82, 0.95, 0.82))
+	add_child(animal_panel)
 
-	var back_button := _make_button("← MENU", 22, Vector2(140, 54), Color(0.96, 0.98, 0.92))
-	back_button.pressed.connect(_back_to_menu)
-	top_bar.add_child(back_button)
-
-	var title := Label.new()
-	title.text = "COMO JOGAR"
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 34)
-	title.add_theme_color_override("font_color", Color.WHITE)
-	top_bar.add_child(title)
-
-	sound_button = _make_button("", 20, Vector2(172, 54), Color(0.96, 0.98, 0.92))
-	sound_button.pressed.connect(_toggle_sound)
-	top_bar.add_child(sound_button)
-	_update_sound_button()
-
-	var skip_button := _make_button("PULAR", 20, Vector2(120, 54), Color(1.0, 0.92, 0.72))
-	skip_button.pressed.connect(_start_game)
-	top_bar.add_child(skip_button)
-
-	var tutorial_card := PanelContainer.new()
-	tutorial_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	tutorial_card.add_theme_stylebox_override("panel", _panel_style(Color(1, 1, 1, 0.96), 28, 0))
-	root.add_child(tutorial_card)
-
-	var card_margin := MarginContainer.new()
-	card_margin.add_theme_constant_override("margin_left", 36)
-	card_margin.add_theme_constant_override("margin_top", 30)
-	card_margin.add_theme_constant_override("margin_right", 36)
-	card_margin.add_theme_constant_override("margin_bottom", 30)
-	tutorial_card.add_child(card_margin)
-
-	var columns := HBoxContainer.new()
-	columns.add_theme_constant_override("separation", 36)
-	card_margin.add_child(columns)
-
-	var left := VBoxContainer.new()
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 0.9
-	left.alignment = BoxContainer.ALIGNMENT_CENTER
-	left.add_theme_constant_override("separation", 12)
-	columns.add_child(left)
-
-	var look_label := Label.new()
-	look_label.text = "1. OLHE O ANIMAL"
-	look_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	look_label.add_theme_font_size_override("font_size", 26)
-	look_label.add_theme_color_override("font_color", Color(0.08, 0.30, 0.18))
-	left.add_child(look_label)
-
-	var animal_panel := PanelContainer.new()
-	animal_panel.custom_minimum_size = Vector2(390, 390)
-	animal_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.88, 0.97, 0.84), 28, 4))
-	left.add_child(animal_panel)
-
-	var animal_image := TextureRect.new()
+	animal_image = TextureRect.new()
 	animal_image.texture = load("res://img/cachorro.png")
+	animal_image.size = animal_panel.size
 	animal_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	animal_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	animal_image.custom_minimum_size = Vector2(360, 360)
 	animal_panel.add_child(animal_image)
 
-	var right := VBoxContainer.new()
-	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right.size_flags_stretch_ratio = 1.15
-	right.alignment = BoxContainer.ALIGNMENT_CENTER
-	right.add_theme_constant_override("separation", 18)
-	columns.add_child(right)
-
-	var instruction := Label.new()
-	instruction.text = "2. COMPLETE O NOME"
-	instruction.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	instruction.add_theme_font_size_override("font_size", 26)
-	instruction.add_theme_color_override("font_color", Color(0.08, 0.30, 0.18))
-	right.add_child(instruction)
-
-	var explanation := Label.new()
-	explanation.text = "Uma sílaba está faltando. Escolha abaixo qual completa a palavra."
-	explanation.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	explanation.add_theme_font_size_override("font_size", 23)
-	explanation.add_theme_color_override("font_color", Color(0.16, 0.20, 0.18))
-	right.add_child(explanation)
-
-	var word_panel := PanelContainer.new()
-	word_panel.custom_minimum_size = Vector2(520, 112)
-	word_panel.add_theme_stylebox_override("panel", _panel_style(Color.WHITE, 24, 4))
-	right.add_child(word_panel)
+	word_panel = Panel.new()
+	word_panel.size = Vector2(600, 130)
+	word_panel.position = Vector2((tela.x - 600) / 2.0, 610)
+	estilizar_painel(word_panel, Color.WHITE)
+	add_child(word_panel)
 
 	word_label = Label.new()
+	word_label.size = word_panel.size
 	word_label.text = "__CHORRO"
 	word_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	word_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	word_label.add_theme_font_size_override("font_size", 52)
-	word_label.add_theme_color_override("font_color", Color(0.08, 0.14, 0.10))
+	word_label.add_theme_font_size_override("font_size", 62)
+	word_label.add_theme_color_override("font_color", Color.BLACK)
 	word_panel.add_child(word_label)
 
-	var options := HBoxContainer.new()
-	options.alignment = BoxContainer.ALIGNMENT_CENTER
-	options.add_theme_constant_override("separation", 16)
-	right.add_child(options)
+	btn_ca = criar_opcao("CA", Vector2(430, 800))
+	btn_ba = criar_opcao("BA", Vector2(845, 800))
+	btn_pa = criar_opcao("PA", Vector2(1260, 800))
 
-	for syllable in ["CA", "BA", "PA"]:
-		var button := _make_button(syllable, 42, Vector2(150, 92), Color(0.82, 0.94, 1.0))
-		button.pressed.connect(_on_option_pressed.bind(button, syllable))
-		option_buttons.append(button)
-		options.add_child(button)
+	btn_ca.pressed.connect(func(): verificar_tutorial("CA"))
+	btn_ba.pressed.connect(func(): verificar_tutorial("BA"))
+	btn_pa.pressed.connect(func(): verificar_tutorial("PA"))
 
-	feedback_label = Label.new()
-	feedback_label.text = "3. TENTE: qual sílaba começa CACHORRO?"
-	feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	feedback_label.custom_minimum_size.y = 60
-	feedback_label.add_theme_font_size_override("font_size", 24)
-	feedback_label.add_theme_color_override("font_color", Color(0.20, 0.24, 0.20))
-	right.add_child(feedback_label)
+	btn_ca.mouse_entered.connect(func(): audio.play_voice("syllable_ca"))
+	btn_ba.mouse_entered.connect(func(): audio.play_voice("syllable_ba"))
+	btn_pa.mouse_entered.connect(func(): audio.play_voice("syllable_pa"))
 
-	start_button = _make_button("COMEÇAR O JOGO", 30, Vector2(360, 78), Color(0.55, 0.90, 0.48))
-	start_button.visible = false
-	start_button.pressed.connect(_start_game)
-	right.add_child(_center_control(start_button))
+	btn_skip = Button.new()
+	btn_skip.text = "PULAR"
+	btn_skip.size = Vector2(150, 70)
+	btn_skip.position = Vector2(24, 24)
+	estilizar_botao_pequeno(btn_skip)
+	btn_skip.pressed.connect(finalizar_tutorial)
+	btn_skip.mouse_entered.connect(func(): audio.play_voice("ui_skip"))
+	add_child(btn_skip)
 
-	if not option_buttons.is_empty():
-		option_buttons[0].grab_focus()
+	btn_repeat = Button.new()
+	btn_repeat.text = "🔊"
+	btn_repeat.size = Vector2(90, 70)
+	btn_repeat.position = Vector2(tela.x - 230, 24)
+	estilizar_botao_pequeno(btn_repeat)
+	btn_repeat.pressed.connect(func(): audio.play_voice(current_voice_key))
+	btn_repeat.mouse_entered.connect(func(): audio.play_voice("ui_repeat"))
+	add_child(btn_repeat)
 
-func _on_option_pressed(button: Button, syllable: String) -> void:
-	if completed:
-		return
+	btn_volume = Button.new()
+	btn_volume.text = "SOM"
+	btn_volume.size = Vector2(110, 70)
+	btn_volume.position = Vector2(tela.x - 130, 24)
+	estilizar_botao_pequeno(btn_volume)
+	btn_volume.pressed.connect(toggle_volume_panel)
+	btn_volume.mouse_entered.connect(func(): audio.play_voice("ui_volume"))
+	add_child(btn_volume)
 
-	audio.play_syllable(syllable)
+	volume_panel = Panel.new()
+	volume_panel.size = Vector2(300, 90)
+	volume_panel.position = Vector2(tela.x - 330, 108)
+	volume_panel.visible = false
+	estilizar_painel(volume_panel, Color(1, 1, 1, 0.95))
+	add_child(volume_panel)
 
-	if syllable == "CA":
-		completed = true
-		word_label.text = "CACHORRO"
-		feedback_label.text = "MUITO BEM! CACHORRO começa com CA."
-		feedback_label.add_theme_color_override("font_color", Color(0.06, 0.45, 0.18))
-		_style_option(button, Color(0.55, 0.90, 0.48))
-		for option in option_buttons:
-			option.disabled = true
-		start_button.visible = true
-		start_button.grab_focus()
+	volume_slider = HSlider.new()
+	volume_slider.min_value = 0.0
+	volume_slider.max_value = 1.0
+	volume_slider.step = 0.05
+	volume_slider.value = audio.load_saved_volume()
+	volume_slider.size = Vector2(245, 40)
+	volume_slider.position = Vector2(28, 24)
+	volume_slider.value_changed.connect(func(value: float): audio.save_master_volume(value))
+	volume_panel.add_child(volume_slider)
+
+func executar_tutorial() -> void:
+	bloquear_opcoes(true)
+
+	await falar_e_mostrar("tutorial_welcome", "Vamos aprender a jogar!", 2.0)
+	if not tutorial_ativo: return
+
+	destacar(animal_panel, Color(1.0, 0.95, 0.55))
+	await falar_e_mostrar("tutorial_look_animal", "Olhe o animal.", 2.0)
+	if not tutorial_ativo: return
+
+	await falar_e_mostrar("animal_cachorro", "Este é um cachorro.", 1.8)
+	if not tutorial_ativo: return
+
+	destacar(word_panel, Color(1.0, 0.95, 0.55))
+	await falar_e_mostrar("tutorial_word_missing", "Uma parte da palavra está faltando.", 2.2)
+	if not tutorial_ativo: return
+
+	bloquear_opcoes(false)
+	destacar_botao(btn_ca)
+	await falar_e_mostrar("tutorial_choose_ca", "Escolha a sílaba CA.", 2.0)
+	if not tutorial_ativo: return
+
+	instruction_label.text = "Agora clique em CA."
+	current_voice_key = "tutorial_click_ca"
+	audio.play_voice(current_voice_key)
+	await tutorial_correct_choice
+	if not tutorial_ativo: return
+
+	word_label.text = "CACHORRO"
+	destacar(word_panel, Color(0.65, 1.0, 0.55))
+	await falar_e_mostrar("feedback_correct", "Muito bem! Você acertou!", 1.8)
+	if not tutorial_ativo: return
+
+	await falar_e_mostrar("tutorial_your_turn", "Agora é sua vez!", 1.8)
+	if tutorial_ativo:
+		finalizar_tutorial()
+
+func verificar_tutorial(resposta: String) -> void:
+	audio.stop_voice()
+	if resposta == "CA":
+		bloquear_opcoes(true)
+		tutorial_correct_choice.emit()
 	else:
-		feedback_label.text = "QUASE! Tente outra sílaba."
-		feedback_label.add_theme_color_override("font_color", Color(0.72, 0.28, 0.08))
-		_style_option(button, Color(1.0, 0.76, 0.68))
-		await get_tree().create_timer(0.55).timeout
-		if is_instance_valid(button) and not completed:
-			_style_option(button, Color(0.82, 0.94, 1.0))
+		instruction_label.text = "Tente outra vez. Procure CA."
+		current_voice_key = "feedback_try_again"
+		audio.play_voice(current_voice_key)
+		destacar_botao(btn_ca)
 
-func _start_game() -> void:
-	_mark_tutorial_seen()
+func falar_e_mostrar(key: String, texto: String, fallback: float) -> void:
+	current_voice_key = key
+	instruction_label.text = texto
+	await audio.speak_and_wait(key, fallback)
+
+func finalizar_tutorial() -> void:
+	if not tutorial_ativo:
+		return
+	tutorial_ativo = false
+	audio.stop_voice()
+	marcar_tutorial_visto()
 	get_tree().change_scene_to_file("res://scenes/Jogo.tscn")
 
-func _back_to_menu() -> void:
-	get_tree().change_scene_to_file("res://scenes/Menu.tscn")
-
-func _mark_tutorial_seen() -> void:
+func marcar_tutorial_visto() -> void:
 	var config := ConfigFile.new()
 	config.load(SETTINGS_PATH)
 	config.set_value("tutorial", "seen", true)
 	config.save(SETTINGS_PATH)
 
-func _toggle_sound() -> void:
-	audio.toggle_muted()
-	_update_sound_button()
+func criar_opcao(texto: String, posicao: Vector2) -> Button:
+	var botao := Button.new()
+	botao.text = texto
+	botao.size = Vector2(230, 120)
+	botao.position = posicao
+	estilizar_botao(botao)
+	add_child(botao)
+	return botao
 
-func _update_sound_button() -> void:
-	sound_button.text = "SOM: OFF" if audio.is_muted() else "SOM: ON"
+func bloquear_opcoes(bloquear: bool) -> void:
+	btn_ca.disabled = bloquear
+	btn_ba.disabled = bloquear
+	btn_pa.disabled = bloquear
 
-func _center_control(control: Control) -> CenterContainer:
-	var center := CenterContainer.new()
-	center.add_child(control)
-	return center
+func destacar(painel: Panel, cor: Color) -> void:
+	estilizar_painel(painel, cor)
 
-func _style_option(button: Button, color: Color) -> void:
-	button.add_theme_stylebox_override("normal", _button_style(color))
-	button.add_theme_stylebox_override("hover", _button_style(color.lightened(0.07)))
-	button.add_theme_stylebox_override("pressed", _button_style(color.darkened(0.07)))
-	button.add_theme_stylebox_override("disabled", _button_style(color))
+func destacar_botao(botao: Button) -> void:
+	var destaque := StyleBoxFlat.new()
+	destaque.bg_color = Color(1.0, 0.95, 0.45)
+	destaque.border_color = Color.BLACK
+	destaque.set_border_width_all(6)
+	destaque.set_corner_radius_all(22)
+	botao.add_theme_stylebox_override("normal", destaque)
 
-func _make_button(text: String, font_size: int, minimum: Vector2, color: Color) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = minimum
-	button.add_theme_font_size_override("font_size", font_size)
-	button.add_theme_color_override("font_color", Color(0.06, 0.12, 0.08))
-	button.add_theme_color_override("font_hover_color", Color(0.06, 0.12, 0.08))
-	button.add_theme_color_override("font_pressed_color", Color(0.06, 0.12, 0.08))
-	button.add_theme_color_override("font_focus_color", Color(0.06, 0.12, 0.08))
-	button.add_theme_stylebox_override("normal", _button_style(color))
-	button.add_theme_stylebox_override("hover", _button_style(color.lightened(0.07)))
-	button.add_theme_stylebox_override("pressed", _button_style(color.darkened(0.07)))
-	button.add_theme_stylebox_override("focus", _focus_style())
-	return button
+func toggle_volume_panel() -> void:
+	volume_panel.visible = not volume_panel.visible
 
-func _button_style(color: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.border_color = Color(0.08, 0.18, 0.12)
-	style.set_border_width_all(4)
-	style.set_corner_radius_all(20)
-	style.shadow_color = Color(0, 0, 0, 0.20)
-	style.shadow_size = 6
-	style.shadow_offset = Vector2(0, 4)
-	return style
+func estilizar_painel(painel: Panel, cor: Color) -> void:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = cor
+	estilo.border_color = Color.BLACK
+	estilo.set_border_width_all(5)
+	estilo.set_corner_radius_all(24)
+	estilo.shadow_color = Color(0, 0, 0, 0.3)
+	estilo.shadow_size = 8
+	estilo.shadow_offset = Vector2(5, 5)
+	painel.add_theme_stylebox_override("panel", estilo)
 
-func _focus_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0)
-	style.border_color = Color(1.0, 0.75, 0.12)
-	style.set_border_width_all(6)
-	style.set_corner_radius_all(22)
-	return style
+func estilizar_botao(botao: Button) -> void:
+	botao.add_theme_font_size_override("font_size", 52)
+	botao.add_theme_color_override("font_color", Color.BLACK)
+	botao.add_theme_color_override("font_hover_color", Color.BLACK)
+	botao.add_theme_color_override("font_pressed_color", Color.BLACK)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color.WHITE
+	normal.border_color = Color.BLACK
+	normal.set_border_width_all(5)
+	normal.set_corner_radius_all(22)
+	normal.shadow_color = Color(0, 0, 0, 0.35)
+	normal.shadow_size = 8
+	normal.shadow_offset = Vector2(6, 6)
+	var hover := normal.duplicate()
+	hover.bg_color = Color(0.85, 0.95, 1.0)
+	var pressed := normal.duplicate()
+	pressed.bg_color = Color(0.75, 0.9, 1.0)
+	botao.add_theme_stylebox_override("normal", normal)
+	botao.add_theme_stylebox_override("hover", hover)
+	botao.add_theme_stylebox_override("pressed", pressed)
 
-func _panel_style(color: Color, radius: int, border_width: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.border_color = Color(0.08, 0.18, 0.12)
-	style.set_border_width_all(border_width)
-	style.set_corner_radius_all(radius)
-	style.shadow_color = Color(0, 0, 0, 0.18)
-	style.shadow_size = 8
-	style.shadow_offset = Vector2(0, 5)
-	return style
+func estilizar_botao_pequeno(botao: Button) -> void:
+	estilizar_botao(botao)
+	botao.add_theme_font_size_override("font_size", 26)

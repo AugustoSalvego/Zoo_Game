@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/jogo.gd" id="1_game"]
-[ext_resource type="Texture2D" path="res://img/fundo_jogo.png" id="2_bg"]
+[ext_resource type="Script" path="res://scripts/jogo.gd" id="1_eopmu"]
+[ext_resource type="Texture2D" path="res://img/fundo_jogo.png" id="2_8vgre"]
 
 [node name="Jogo" type="Control"]
 layout_mode = 3
@@ -10,261 +10,65 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_game")
+script = ExtResource("1_eopmu")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Layout" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("2_bg")
-expand_mode = 1
+
+[node name="FundoJogo" type="TextureRect" parent="Layout"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_8vgre")
 stretch_mode = 6
 
-[node name="Shade" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.05, 0.13, 0.08, 0.12)
+[node name="CaixaPalavra" type="Panel" parent="Layout"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
-[node name="Margin" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 20
-
-[node name="Root" type="VBoxContainer" parent="Margin"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="TopBar" type="HBoxContainer" parent="Margin/Root"]
-custom_minimum_size = Vector2(0, 58)
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="Menu" type="Button" parent="Margin/Root/TopBar"]
-custom_minimum_size = Vector2(130, 54)
-layout_mode = 2
-text = "← MENU"
-
-[node name="Help" type="Button" parent="Margin/Root/TopBar"]
-custom_minimum_size = Vector2(130, 54)
-layout_mode = 2
-text = "? AJUDA"
-
-[node name="LeftSpacer" type="Control" parent="Margin/Root/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Progress" type="Label" parent="Margin/Root/TopBar"]
-custom_minimum_size = Vector2(390, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 24
-text = "ANIMAL 1 DE 7"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="RightSpacer" type="Control" parent="Margin/Root/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Sound" type="Button" parent="Margin/Root/TopBar"]
-custom_minimum_size = Vector2(150, 54)
-layout_mode = 2
-text = "SOM: ON"
-
-[node name="GameContent" type="HBoxContainer" parent="Margin/Root"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 24
-
-[node name="AnimalCard" type="PanelContainer" parent="Margin/Root/GameContent"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.9
-
-[node name="AnimalMargin" type="MarginContainer" parent="Margin/Root/GameContent/AnimalCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 24
-
-[node name="AnimalBox" type="VBoxContainer" parent="Margin/Root/GameContent/AnimalCard/AnimalMargin"]
-layout_mode = 2
-theme_override_constants/separation = 14
-alignment = 1
-
-[node name="AnimalTitle" type="Label" parent="Margin/Root/GameContent/AnimalCard/AnimalMargin/AnimalBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.08, 0.3, 0.18, 1)
-theme_override_font_sizes/font_size = 26
-text = "OLHE O ANIMAL"
-horizontal_alignment = 1
-
-[node name="ImageFrame" type="PanelContainer" parent="Margin/Root/GameContent/AnimalCard/AnimalMargin/AnimalBox"]
-custom_minimum_size = Vector2(390, 390)
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="AnimalImage" type="TextureRect" parent="Margin/Root/GameContent/AnimalCard/AnimalMargin/AnimalBox/ImageFrame"]
-custom_minimum_size = Vector2(370, 370)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="ChallengeCard" type="PanelContainer" parent="Margin/Root/GameContent"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.15
-
-[node name="ChallengeMargin" type="MarginContainer" parent="Margin/Root/GameContent/ChallengeCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 34
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 34
-theme_override_constants/margin_bottom = 22
-
-[node name="Challenge" type="VBoxContainer" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="Instruction" type="Label" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.08, 0.3, 0.18, 1)
-theme_override_font_sizes/font_size = 28
-text = "QUAL SÍLABA COMPLETA O NOME?"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="WordPanel" type="PanelContainer" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge"]
-custom_minimum_size = Vector2(540, 118)
-layout_mode = 2
-
-[node name="Word" type="Label" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge/WordPanel"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.08, 0.14, 0.1, 1)
-theme_override_font_sizes/font_size = 54
+[node name="LblPalavra" type="Label" parent="Layout/CaixaPalavra"]
+layout_mode = 0
+offset_right = 560.0
+offset_bottom = 150.0
 text = "__CHORRO"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="OptionHint" type="Label" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.34, 0.38, 0.34, 1)
-theme_override_font_sizes/font_size = 20
-text = "ESCOLHA UMA OPÇÃO"
-horizontal_alignment = 1
+[node name="CaixaAnimal" type="Panel" parent="Layout"]
+layout_mode = 0
+offset_right = 450.0
+offset_bottom = 450.0
 
-[node name="Options" type="HBoxContainer" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge"]
-layout_mode = 2
-theme_override_constants/separation = 14
-alignment = 1
+[node name="ImgAnimal" type="TextureRect" parent="Layout/CaixaAnimal"]
+layout_mode = 0
+offset_right = 450.0
+offset_bottom = 450.0
 
-[node name="Btn1" type="Button" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge/Options"]
-custom_minimum_size = Vector2(158, 96)
-layout_mode = 2
-text = "CA"
+[node name="Btn1" type="Button" parent="Layout"]
+layout_mode = 0
+offset_right = 230.0
+offset_bottom = 120.0
 
-[node name="Btn2" type="Button" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge/Options"]
-custom_minimum_size = Vector2(158, 96)
-layout_mode = 2
-text = "BA"
+[node name="Btn2" type="Button" parent="Layout"]
+layout_mode = 0
+offset_right = 230.0
+offset_bottom = 120.0
 
-[node name="Btn3" type="Button" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge/Options"]
-custom_minimum_size = Vector2(158, 96)
-layout_mode = 2
-text = "PA"
+[node name="Btn3" type="Button" parent="Layout"]
+layout_mode = 0
+offset_right = 230.0
+offset_bottom = 120.0
 
-[node name="Feedback" type="Label" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge"]
-custom_minimum_size = Vector2(0, 64)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.22, 0.26, 0.22, 1)
-theme_override_font_sizes/font_size = 24
-text = "Toque em uma sílaba para responder."
-horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 2
-
-[node name="NextCenter" type="CenterContainer" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge"]
-layout_mode = 2
-
-[node name="Next" type="Button" parent="Margin/Root/GameContent/ChallengeCard/ChallengeMargin/Challenge/NextCenter"]
+[node name="BtnReiniciar" type="Button" parent="Layout"]
 visible = false
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
-text = "PRÓXIMO ANIMAL →"
-
-[node name="FinishContent" type="CenterContainer" parent="Margin/Root"]
-visible = false
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="FinishCard" type="PanelContainer" parent="Margin/Root/FinishContent"]
-custom_minimum_size = Vector2(720, 470)
-layout_mode = 2
-
-[node name="FinishMargin" type="MarginContainer" parent="Margin/Root/FinishContent/FinishCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 48
-theme_override_constants/margin_bottom = 40
-
-[node name="FinishBox" type="VBoxContainer" parent="Margin/Root/FinishContent/FinishCard/FinishMargin"]
-layout_mode = 2
-theme_override_constants/separation = 22
-alignment = 1
-
-[node name="Title" type="Label" parent="Margin/Root/FinishContent/FinishCard/FinishMargin/FinishBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.06, 0.45, 0.18, 1)
-theme_override_font_sizes/font_size = 58
-text = "PARABÉNS!"
-horizontal_alignment = 1
-
-[node name="FinishText" type="Label" parent="Margin/Root/FinishContent/FinishCard/FinishMargin/FinishBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.16, 0.2, 0.18, 1)
-theme_override_font_sizes/font_size = 28
-text = "Você completou o zoológico!"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="Stars" type="Label" parent="Margin/Root/FinishContent/FinishCard/FinishMargin/FinishBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.65, 0.08, 1)
-theme_override_font_sizes/font_size = 38
-text = "★  ★  ★  ★  ★  ★  ★"
-horizontal_alignment = 1
-
-[node name="Restart" type="Button" parent="Margin/Root/FinishContent/FinishCard/FinishMargin/FinishBox"]
-custom_minimum_size = Vector2(360, 82)
-layout_mode = 2
-size_flags_horizontal = 4
+layout_mode = 0
+offset_right = 430.0
+offset_bottom = 110.0
 text = "JOGAR DE NOVO"
-
-[node name="FinalMenu" type="Button" parent="Margin/Root/FinishContent/FinishCard/FinishMargin/FinishBox"]
-custom_minimum_size = Vector2(310, 68)
-layout_mode = 2
-size_flags_horizontal = 4
-text = "VOLTAR AO MENU"
-
-[node name="HelpDialog" type="AcceptDialog" parent="."]
-initial_position = 1
-size = Vector2i(680, 420)
