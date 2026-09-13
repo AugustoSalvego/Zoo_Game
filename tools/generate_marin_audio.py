@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Generate the complete Zoo-Game voice pack with free local Kokoro TTS.
 
-This replaces the paid OpenAI TTS generation path. Kokoro runs locally in the
-GitHub Actions runner, requires no API key and generates every clip with the
-same Brazilian Portuguese voice (pf_dora).
+Kokoro runs locally in the GitHub Actions runner, requires no API key and
+generates every clip with the same Brazilian Portuguese voice (pm_alex).
 
 Usage:
     python tools/generate_marin_audio.py --check
@@ -28,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "audio" / "marin" / "manifest.json"
 SAMPLE_RATE = 24000
 LANG_CODE = "p"
-VOICE = "pf_dora"
+VOICE = "pm_alex"
 DEFAULT_SPEED = 0.90
 SYLLABLE_SPEED = 0.83
 
@@ -44,7 +43,6 @@ def load_manifest() -> dict:
     if not isinstance(clips, dict) or not clips:
         raise RuntimeError("Voice manifest has no clips.")
 
-    # Keep repository metadata truthful after the free migration.
     data["profile"] = {
         "provider": "Kokoro",
         "model": "hexgrad/Kokoro-82M",
