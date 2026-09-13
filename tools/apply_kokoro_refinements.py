@@ -15,18 +15,19 @@ MANIFEST = ROOT / "audio" / "marin" / "manifest.json"
 GENERATOR = ROOT / "tools" / "generate_marin_audio.py"
 TUTORIAL = ROOT / "scripts" / "tutorial.gd"
 GAME = ROOT / "scripts" / "jogo.gd"
+VOICE = "pm_alex"
 
 SYLLABLE_SYNTHESIS = {
-    "syllable_ca": "cá.",
-    "syllable_ba": "bá.",
-    "syllable_pa": "pá.",
-    "syllable_ga": "gá.",
-    "syllable_ma": "má.",
-    "syllable_ta": "tá.",
-    "syllable_la": "lá.",
-    "syllable_sa": "sá.",
-    "syllable_ra": "rá.",
-    "syllable_fa": "fá.",
+    "syllable_ca": "cá",
+    "syllable_ba": "bá",
+    "syllable_pa": "pá",
+    "syllable_ga": "gá",
+    "syllable_ma": "má",
+    "syllable_ta": "tá",
+    "syllable_la": "lá",
+    "syllable_sa": "sá",
+    "syllable_ra": "rá",
+    "syllable_fa": "fá",
 }
 
 
@@ -58,15 +59,27 @@ def replace_exact_count(
 
 def patch_manifest() -> None:
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    data["profile"]["voice"] = VOICE
     data["profile"]["speed"] = 0.90
     data["category_instructions"]["syllable"] = (
         "Pronuncie somente a sílaba como uma unidade sonora em português brasileiro, "
-        "com a vogal A aberta e clara; não soletre as letras."
+        "com a vogal A aberta e clara; não acrescente nenhum som no final."
+    )
+    data["category_instructions"]["word"] = (
+        "Pronuncie somente a palavra indicada em português brasileiro, de forma clara "
+        "e natural; não acrescente nenhum som depois da última vogal."
     )
     data["clips"]["tutorial_choose_ca"]["synthesis"] = "Escolha a sílaba cá."
 
     for key, synthesis in SYLLABLE_SYNTHESIS.items():
         data["clips"][key]["synthesis"] = synthesis
+
+    # Kokoro can add an audible release/noise to extremely short standalone
+    # utterances when they end with sentence punctuation. Keep punctuation in
+    # the semantic speech field, but synthesize isolated animal names cleanly.
+    for entry in data["clips"].values():
+        if entry.get("category") == "word":
+            entry["synthesis"] = str(entry["speech"]).rstrip(".!? ")
 
     MANIFEST.write_text(
         json.dumps(data, ensure_ascii=False, indent=2) + "\n",
