@@ -3,6 +3,7 @@ extends Control
 const AccessibilityAudio = preload("res://scripts/accessibility_audio.gd")
 const VOLUME_ICON := preload("res://audio/icons/volume.png")
 const MUTED_ICON := preload("res://audio/icons/muted.png")
+const INSTRUCTION_TEXT := "Escolha a sílaba que completa o nome."
 
 @onready var layout: Control = $Layout
 @onready var fundo_jogo: TextureRect = $Layout/FundoJogo
@@ -20,6 +21,7 @@ var fase_atual := 0
 var resposta_correta := ""
 var respondendo := false
 var opcoes_atuais: Array = []
+var anuncio_id := 0
 
 var progress_container: HBoxContainer
 var instruction_label: Label
@@ -52,6 +54,14 @@ func _ready() -> void:
 	btn2.pressed.connect(func(): verificar_resposta(btn2, btn2.text))
 	btn3.pressed.connect(func(): verificar_resposta(btn3, btn3.text))
 	btn_reiniciar.pressed.connect(reiniciar_jogo)
+	btn_reiniciar.mouse_entered.connect(func():
+		if btn_reiniciar.visible:
+			audio.play_voice("final_play_again")
+	)
+	btn_reiniciar.focus_entered.connect(func():
+		if btn_reiniciar.visible:
+			audio.play_voice("final_play_again")
+	)
 
 	btn_reiniciar.hide()
 	carregar_fase(true)
@@ -146,15 +156,17 @@ func criar_controles_acessibilidade() -> void:
 	btn_voltar = criar_botao_topo("↩", Vector2(24, 24))
 	btn_voltar.pressed.connect(voltar_menu)
 	btn_voltar.mouse_entered.connect(func(): audio.play_voice("ui_back"))
+	btn_voltar.focus_entered.connect(func(): audio.play_voice("ui_back"))
 
 	btn_ajuda = criar_botao_topo("?", Vector2(124, 24))
 	btn_ajuda.pressed.connect(abrir_tutorial)
 	btn_ajuda.tooltip_text = "Como jogar"
 	btn_ajuda.mouse_entered.connect(func(): audio.play_voice("ui_help"))
+	btn_ajuda.focus_entered.connect(func(): audio.play_voice("ui_help"))
 
 	btn_repetir = criar_botao_topo("🔊", Vector2(224, 24))
 	btn_repetir.pressed.connect(repetir_instrucao)
-	btn_repetir.tooltip_text = "Ouvir o nome do animal novamente"
+	btn_repetir.tooltip_text = "Ouvir a instrução novamente"
 
 	btn_volume = Button.new()
 	btn_volume.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -167,6 +179,7 @@ func criar_controles_acessibilidade() -> void:
 	atualizar_icone_volume()
 	btn_volume.pressed.connect(toggle_volume_panel)
 	btn_volume.mouse_entered.connect(func(): audio.play_voice("ui_volume"))
+	btn_volume.focus_entered.connect(func(): audio.play_voice("ui_volume"))
 	layout.add_child(btn_volume)
 
 	volume_panel = Panel.new()
@@ -203,6 +216,14 @@ func criar_controles_acessibilidade() -> void:
 	estilizar_botao(btn_menu_final)
 	btn_menu_final.add_theme_font_size_override("font_size", 32)
 	btn_menu_final.pressed.connect(voltar_menu)
+	btn_menu_final.mouse_entered.connect(func():
+		if btn_menu_final.visible:
+			audio.play_voice("final_back_menu")
+	)
+	btn_menu_final.focus_entered.connect(func():
+		if btn_menu_final.visible:
+			audio.play_voice("final_back_menu")
+	)
 	layout.add_child(btn_menu_final)
 
 func criar_botao_topo(texto: String, posicao: Vector2) -> Button:
@@ -215,7 +236,8 @@ func criar_botao_topo(texto: String, posicao: Vector2) -> Button:
 	return botao
 
 func carregar_fase(novas_opcoes: bool = true) -> void:
-	respondendo = false
+	anuncio_id += 1
+	respondendo = true
 	if fase_atual >= fases.size():
 		finalizar_jogo()
 		return
@@ -226,7 +248,7 @@ func carregar_fase(novas_opcoes: bool = true) -> void:
 	btn_reiniciar.hide()
 	btn_menu_final.hide()
 	lbl_palavra.text = fase["incompleto"]
-	instruction_label.text = ""
+	instruction_label.text = str(fase["animal"])
 	estilizar_painel(caixa_palavra, Color.WHITE)
 	img_animal.texture = load(fase["imagem"])
 	atualizar_progresso()
@@ -239,28 +261,39 @@ func carregar_fase(novas_opcoes: bool = true) -> void:
 	btn3.text = opcoes_atuais[2]
 
 	for botao in [btn1, btn2, btn3]:
-		botao.disabled = false
+		botao.disabled = true
 		botao.show()
 		aplicar_estado_botao(botao, Color.WHITE)
 
-	call_deferred("anunciar_fase")
+	call_deferred("anunciar_fase", anuncio_id, fase_atual)
 
-func anunciar_fase() -> void:
-	if fase_atual >= fases.size():
+func anunciar_fase(id: int, indice_fase: int) -> void:
+	if indice_fase >= fases.size() or indice_fase != fase_atual or id != anuncio_id:
 		return
-	var fase = fases[fase_atual]
-	await audio.play_word_and_wait(fase["animal"], 1.0)
+	var fase = fases[indice_fase]
+	instruction_label.text = str(fase["animal"])
+	audio.play_word(str(fase["animal"]))
+	await get_tree().create_timer(1.05).timeout
+	if indice_fase != fase_atual or id != anuncio_id:
+		return
+	instruction_label.text = INSTRUCTION_TEXT
+	audio.play_voice("instruction_choose_syllable")
+	for botao in [btn1, btn2, btn3]:
+		botao.disabled = false
+	respondendo = false
 
 func repetir_instrucao() -> void:
 	if fase_atual >= fases.size():
 		audio.play_voice("final_congratulations")
 		return
-	anunciar_fase()
+	instruction_label.text = INSTRUCTION_TEXT
+	audio.play_voice("instruction_choose_syllable")
 
 func verificar_resposta(botao_escolhido: Button, resposta: String) -> void:
 	if respondendo or fase_atual >= fases.size():
 		return
 	respondendo = true
+	anuncio_id += 1
 	var fase = fases[fase_atual]
 	for botao in [btn1, btn2, btn3]:
 		botao.disabled = true
@@ -270,10 +303,11 @@ func verificar_resposta(botao_escolhido: Button, resposta: String) -> void:
 	if resposta == resposta_correta:
 		aplicar_estado_botao(botao_escolhido, Color(0.65, 1.0, 0.55))
 		lbl_palavra.text = fase["animal"]
-		instruction_label.text = "Parabéns!"
+		instruction_label.text = "Você acertou!"
 		estilizar_painel(caixa_palavra, Color(0.65, 1.0, 0.55))
 		await audio.speak_and_wait("feedback_correct", 1.2)
-		await audio.play_word_and_wait(fase["animal"], 1.0)
+		instruction_label.text = str(fase["animal"])
+		await audio.play_word_and_wait(str(fase["animal"]), 1.0)
 		await get_tree().create_timer(0.45).timeout
 		fase_atual += 1
 		opcoes_atuais.clear()
@@ -286,6 +320,7 @@ func verificar_resposta(botao_escolhido: Button, resposta: String) -> void:
 		await audio.speak_and_wait("feedback_try_again", 1.25)
 		await get_tree().create_timer(0.25).timeout
 		lbl_palavra.text = fase["incompleto"]
+		instruction_label.text = INSTRUCTION_TEXT
 		estilizar_painel(caixa_palavra, Color.WHITE)
 		for botao in [btn1, btn2, btn3]:
 			botao.disabled = false
@@ -314,6 +349,8 @@ func criar_estilo_bolinha(ativa: bool) -> StyleBoxFlat:
 	return estilo
 
 func finalizar_jogo() -> void:
+	respondendo = true
+	anuncio_id += 1
 	for i in range(progress_container.get_child_count()):
 		var dot := progress_container.get_child(i) as Panel
 		if dot != null:
@@ -344,6 +381,7 @@ func criar_confetes() -> void:
 		tween.tween_callback(confete.queue_free)
 
 func reiniciar_jogo() -> void:
+	audio.stop_voice()
 	fase_atual = 0
 	opcoes_atuais.clear()
 	btn_reiniciar.hide()
@@ -357,9 +395,20 @@ func _on_caixa_animal_gui_input(event: InputEvent) -> void:
 	if fase_atual >= fases.size():
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		audio.play_word(str(fases[fase_atual]["animal"]))
+		anunciar_nome_animal_interativo()
 	elif event is InputEventScreenTouch and event.pressed:
-		audio.play_word(str(fases[fase_atual]["animal"]))
+		anunciar_nome_animal_interativo()
+
+func anunciar_nome_animal_interativo() -> void:
+	if fase_atual >= fases.size():
+		return
+	var indice := fase_atual
+	var animal := str(fases[indice]["animal"])
+	instruction_label.text = animal
+	audio.play_word(animal)
+	await get_tree().create_timer(1.05).timeout
+	if indice == fase_atual and not respondendo:
+		instruction_label.text = INSTRUCTION_TEXT
 
 func abrir_tutorial() -> void:
 	audio.stop_voice()
