@@ -3,7 +3,7 @@
   "profile": {
     "provider": "Kokoro",
     "model": "hexgrad/Kokoro-82M",
-    "voice": "pf_dora",
+    "voice": "pm_alex",
     "language": "pt-BR",
     "response_format": "mp3",
     "speed": 0.9,
@@ -16,8 +16,8 @@
     "instruction": "Tom de educadora, gentil, paciente e claro. Faça pausas naturais e não apresse a frase.",
     "feedback_positive": "Tom positivo e encorajador, sem gritar e sem euforia excessiva.",
     "feedback_retry": "Tom acolhedor e neutro, sem demonstrar frustração.",
-    "word": "Pronuncie somente a palavra indicada, de forma clara e natural, sem artigo e sem explicação.",
-    "syllable": "Pronuncie somente a sílaba como uma unidade sonora em português brasileiro, com a vogal A aberta e clara; não soletre as letras."
+    "word": "Pronuncie somente a palavra indicada em português brasileiro, de forma clara e natural; não acrescente nenhum som depois da última vogal.",
+    "syllable": "Pronuncie somente a sílaba como uma unidade sonora em português brasileiro, com a vogal A aberta e clara; não acrescente nenhum som no final."
   },
   "clips": {
     "menu_title": {
@@ -156,119 +156,119 @@
     "word_cachorro": {
       "display": "CACHORRO",
       "speech": "Cachorro.",
-      "synthesis": "Cachorro.",
+      "synthesis": "Cachorro",
       "file": "res://audio/marin/word_cachorro.mp3",
       "category": "word"
     },
     "word_gato": {
       "display": "GATO",
       "speech": "Gato.",
-      "synthesis": "Gato.",
+      "synthesis": "Gato",
       "file": "res://audio/marin/word_gato.mp3",
       "category": "word"
     },
     "word_macaco": {
       "display": "MACACO",
       "speech": "Macaco.",
-      "synthesis": "Macaco.",
+      "synthesis": "Macaco",
       "file": "res://audio/marin/word_macaco.mp3",
       "category": "word"
     },
     "word_baleia": {
       "display": "BALEIA",
       "speech": "Baleia.",
-      "synthesis": "Baleia.",
+      "synthesis": "Baleia",
       "file": "res://audio/marin/word_baleia.mp3",
       "category": "word"
     },
     "word_cavalo": {
       "display": "CAVALO",
       "speech": "Cavalo.",
-      "synthesis": "Cavalo.",
+      "synthesis": "Cavalo",
       "file": "res://audio/marin/word_cavalo.mp3",
       "category": "word"
     },
     "word_galinha": {
       "display": "GALINHA",
       "speech": "Galinha.",
-      "synthesis": "Galinha.",
+      "synthesis": "Galinha",
       "file": "res://audio/marin/word_galinha.mp3",
       "category": "word"
     },
     "word_tartaruga": {
       "display": "TARTARUGA",
       "speech": "Tartaruga.",
-      "synthesis": "Tartaruga.",
+      "synthesis": "Tartaruga",
       "file": "res://audio/marin/word_tartaruga.mp3",
       "category": "word"
     },
     "syllable_ca": {
       "display": "CA",
       "speech": "CA.",
-      "synthesis": "cá.",
+      "synthesis": "cá",
       "file": "res://audio/marin/syllable_ca.mp3",
       "category": "syllable"
     },
     "syllable_ba": {
       "display": "BA",
       "speech": "BA.",
-      "synthesis": "bá.",
+      "synthesis": "bá",
       "file": "res://audio/marin/syllable_ba.mp3",
       "category": "syllable"
     },
     "syllable_pa": {
       "display": "PA",
       "speech": "PA.",
-      "synthesis": "pá.",
+      "synthesis": "pá",
       "file": "res://audio/marin/syllable_pa.mp3",
       "category": "syllable"
     },
     "syllable_ga": {
       "display": "GA",
       "speech": "GA.",
-      "synthesis": "gá.",
+      "synthesis": "gá",
       "file": "res://audio/marin/syllable_ga.mp3",
       "category": "syllable"
     },
     "syllable_ma": {
       "display": "MA",
       "speech": "MA.",
-      "synthesis": "má.",
+      "synthesis": "má",
       "file": "res://audio/marin/syllable_ma.mp3",
       "category": "syllable"
     },
     "syllable_ta": {
       "display": "TA",
       "speech": "TA.",
-      "synthesis": "tá.",
+      "synthesis": "tá",
       "file": "res://audio/marin/syllable_ta.mp3",
       "category": "syllable"
     },
     "syllable_la": {
       "display": "LA",
       "speech": "LA.",
-      "synthesis": "lá.",
+      "synthesis": "lá",
       "file": "res://audio/marin/syllable_la.mp3",
       "category": "syllable"
     },
     "syllable_sa": {
       "display": "SA",
       "speech": "SA.",
-      "synthesis": "sá.",
+      "synthesis": "sá",
       "file": "res://audio/marin/syllable_sa.mp3",
       "category": "syllable"
     },
     "syllable_ra": {
       "display": "RA",
       "speech": "RA.",
-      "synthesis": "rá.",
+      "synthesis": "rá",
       "file": "res://audio/marin/syllable_ra.mp3",
       "category": "syllable"
     },
     "syllable_fa": {
       "display": "FA",
       "speech": "FA.",
-      "synthesis": "fá.",
+      "synthesis": "fá",
       "file": "res://audio/marin/syllable_fa.mp3",
       "category": "syllable"
     }
