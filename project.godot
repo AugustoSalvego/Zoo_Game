@@ -4,7 +4,6 @@
 ;
 ; Format:
 ;   [section] ; section goes between []
-;   param=value
 
 config_version=5
 
@@ -14,6 +13,10 @@ config/name="ZoologicoDasSilabas"
 run/main_scene="uid://bggt3w3t0q4pc"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Audio="*res://scripts/accessibility_audio.gd"
 
 [audio]
 
