@@ -2,18 +2,20 @@ extends Node
 class_name AccessibilityAudio
 
 const SETTINGS_PATH := "user://zoo_settings.cfg"
+const MARIN_MANIFEST_PATH := "res://audio/marin/manifest.json"
 
+# Temporary compatibility sources. They are used only while the complete Marin
+# pack is not present. Once every manifest file exists, runtime speech is 100%
+# local Marin and these sources are never selected.
 const NINO_A_BASE := "https://raw.githubusercontent.com/RafaelTomazGraciano/ninoedu/main/assets/Vogal_A/Audios/"
 const NINO_O_WORDS_BASE := "https://raw.githubusercontent.com/RafaelTomazGraciano/ninoedu/main/assets/Vogal_O/AudiosPalavras/"
 const LIGUE_AUDIO_BASE := "https://raw.githubusercontent.com/RafaelTomazGraciano/ligue-as-silabas/main/assets/audios/"
 
-# Falas existentes no padrão dos jogos NinoEdu. Os textos exibidos no jogo
-# são mantidos equivalentes a estas falas.
-const REMOTE_VOICES := {
+const LEGACY_REMOTE_VOICES := {
 	"menu_play": LIGUE_AUDIO_BASE + "jogar.ogg",
 	"menu_how_to_play": LIGUE_AUDIO_BASE + "como_jogar.ogg",
 	"ui_volume": LIGUE_AUDIO_BASE + "volume.ogg",
-	"ui_back": LIGUE_AUDIO_BASE + "voltar.ogg",
+	"ui_back_menu": LIGUE_AUDIO_BASE + "voltar.ogg",
 	"ui_help": LIGUE_AUDIO_BASE + "como_jogar.ogg",
 	"ui_skip": LIGUE_AUDIO_BASE + "como_jogar/pular_tutorial.ogg",
 	"tutorial_welcome": LIGUE_AUDIO_BASE + "como_jogar/vamos_aprender_a_jogar.ogg",
@@ -22,42 +24,16 @@ const REMOTE_VOICES := {
 	"tutorial_your_turn": LIGUE_AUDIO_BASE + "como_jogar/sua_vez.ogg"
 }
 
-# Frases próprias do Zoológico. São arquivos locais para que a frase falada
-# seja sempre exatamente a mesma que aparece na tela e funcione também no Web.
-const LOCAL_VOICE_PATHS := {
+const LEGACY_LOCAL_VOICES := {
 	"tutorial_look_animal": "res://audio/voice/tutorial_look_animal.ogg",
 	"tutorial_word_missing": "res://audio/voice/tutorial_word_missing.ogg",
 	"tutorial_choose_ca": "res://audio/voice/tutorial_choose_ca.ogg",
-	"instruction_choose_syllable": "res://audio/voice/instruction_choose_syllable.ogg",
-	"final_congratulations": "res://audio/voice/final_congratulations.ogg",
+	"final_complete": "res://audio/voice/final_congratulations.ogg",
 	"final_play_again": "res://audio/voice/final_play_again.ogg",
 	"final_back_menu": "res://audio/voice/final_back_menu.ogg"
 }
 
-const FALLBACK_TEXTS := {
-	"menu_play": "Jogar.",
-	"menu_how_to_play": "Como jogar.",
-	"ui_volume": "Volume.",
-	"ui_back": "Voltar.",
-	"ui_help": "Como jogar.",
-	"ui_skip": "Pular tutorial.",
-	"ui_repeat": "Ouvir novamente.",
-	"tutorial_welcome": "Vamos aprender a jogar!",
-	"tutorial_look_animal": "Olhe o animal.",
-	"tutorial_word_missing": "Uma parte da palavra está faltando.",
-	"tutorial_choose_ca": "Escolha a sílaba CA.",
-	"feedback_correct": "Você acertou!",
-	"feedback_try_again": "Tente outra vez.",
-	"tutorial_your_turn": "Sua vez!",
-	"instruction_choose_syllable": "Escolha a sílaba que completa o nome.",
-	"final_congratulations": "Parabéns! Você completou o Zoológico das Sílabas!",
-	"final_play_again": "Jogar de novo.",
-	"final_back_menu": "Voltar ao menu."
-}
-
-# Todos os nomes dos animais usam arquivos locais gravados/gerados com a mesma
-# voz. Isso evita a troca perceptível de voz entre uma fase e outra.
-const LOCAL_WORD_PATHS := {
+const LEGACY_WORDS := {
 	"CACHORRO": "res://audio/words/cachorro.ogg",
 	"GATO": "res://audio/words/gato.ogg",
 	"MACACO": "res://audio/words/macaco.ogg",
@@ -67,11 +43,26 @@ const LOCAL_WORD_PATHS := {
 	"TARTARUGA": "res://audio/words/tartaruga.ogg"
 }
 
-# Mantido somente como fallback caso um arquivo local de palavra seja removido.
-const NINO_WORD_URLS := {
-	"GATO": NINO_O_WORDS_BASE + "gato.ogg",
-	"MACACO": NINO_O_WORDS_BASE + "macaco.ogg",
-	"CAVALO": NINO_O_WORDS_BASE + "cavalo.ogg"
+const FALLBACK_TEXTS := {
+	"menu_title": "Zoológico das Sílabas.",
+	"menu_play": "Jogar.",
+	"menu_how_to_play": "Como jogar.",
+	"ui_volume": "Volume.",
+	"ui_back_menu": "Voltar ao menu.",
+	"ui_help": "Como jogar.",
+	"ui_skip": "Pular.",
+	"ui_repeat": "Ouvir novamente.",
+	"tutorial_welcome": "Vamos aprender a jogar!",
+	"tutorial_look_animal": "Olhe o animal.",
+	"tutorial_word_missing": "Uma parte da palavra está faltando.",
+	"tutorial_choose_ca": "Escolha a sílaba CA.",
+	"feedback_correct": "Você acertou!",
+	"feedback_try_again": "Tente outra vez.",
+	"tutorial_your_turn": "Sua vez!",
+	"final_title": "Parabéns!",
+	"final_complete": "Você completou o Zoológico das Sílabas!",
+	"final_play_again": "Jogar de novo.",
+	"final_back_menu": "Voltar ao menu."
 }
 
 static var _stream_cache: Dictionary = {}
@@ -79,19 +70,51 @@ static var _stream_cache: Dictionary = {}
 var voice_player := AudioStreamPlayer.new()
 var syllable_player := AudioStreamPlayer.new()
 var sfx_player := AudioStreamPlayer.new()
+
 var _tts_voice := ""
 var _last_nonzero_volume := 0.8
 var _spoken_generation := 0
+
+var _marin_entries: Dictionary = {}
+var _marin_missing: Array[String] = []
+var _marin_ready := false
 
 func _ready() -> void:
 	add_child(voice_player)
 	add_child(syllable_player)
 	add_child(sfx_player)
+	_load_marin_manifest()
 	_tts_voice = _find_portuguese_voice()
 	var saved := load_saved_volume()
 	if saved > 0.001:
 		_last_nonzero_volume = saved
 	set_master_volume(saved)
+
+func is_marin_ready() -> bool:
+	return _marin_ready
+
+func get_missing_marin_files() -> Array[String]:
+	return _marin_missing.duplicate()
+
+func get_display_text(key: String, default_text: String = "") -> String:
+	var entry := _get_marin_entry(key)
+	if not entry.is_empty():
+		return str(entry.get("display", default_text))
+	return default_text
+
+func get_spoken_text(key: String, default_text: String = "") -> String:
+	var entry := _get_marin_entry(key)
+	if not entry.is_empty():
+		return str(entry.get("speech", default_text))
+	return str(FALLBACK_TEXTS.get(key, default_text))
+
+func get_word_display(word: String) -> String:
+	var normalized := word.strip_edges().to_lower()
+	return get_display_text("word_" + normalized, word.to_upper())
+
+func get_syllable_display(syllable: String) -> String:
+	var normalized := syllable.strip_edges().to_lower()
+	return get_display_text("syllable_" + normalized, syllable.to_upper())
 
 func set_master_volume(value: float) -> void:
 	var safe_value := clampf(value, 0.0, 1.0)
@@ -119,113 +142,94 @@ func is_muted() -> bool:
 	return load_saved_volume() <= 0.001
 
 func play_voice(key: String) -> bool:
-	var local_stream := _get_local_voice_stream(key)
-	if local_stream != null:
-		_stop_spoken_audio()
-		voice_player.stream = local_stream
-		voice_player.play()
-		return true
-
-	var url := str(REMOTE_VOICES.get(key, ""))
-	if not url.is_empty():
-		_play_remote_nonblocking("voice:" + key, url, voice_player, key)
-		return true
-
-	var text := str(FALLBACK_TEXTS.get(key, ""))
-	if not text.is_empty():
-		return speak_text(text)
-	return false
+	if _marin_ready:
+		return _play_marin_nonblocking(key, voice_player)
+	return _play_legacy_voice(key)
 
 func speak_and_wait(key: String, fallback_seconds: float = 1.2) -> void:
-	var local_stream := _get_local_voice_stream(key)
-	if local_stream != null:
-		_stop_spoken_audio()
-		voice_player.stream = local_stream
-		voice_player.play()
-		await voice_player.finished
+	if _marin_ready:
+		var stream := _get_marin_stream(key)
+		if stream != null:
+			await _play_stream_and_wait(stream, voice_player)
+			return
 		return
 
-	var url := str(REMOTE_VOICES.get(key, ""))
+	var local_stream := _get_legacy_local_voice_stream(key)
+	if local_stream != null:
+		await _play_stream_and_wait(local_stream, voice_player)
+		return
+
+	var url := str(LEGACY_REMOTE_VOICES.get(key, ""))
 	if not url.is_empty():
-		var stream := await _fetch_stream("voice:" + key, url)
-		if stream != null:
-			_stop_spoken_audio()
-			voice_player.stream = stream
-			voice_player.play()
-			await voice_player.finished
+		var remote_stream := await _fetch_stream("legacy_voice:" + key, url)
+		if remote_stream != null:
+			await _play_stream_and_wait(remote_stream, voice_player)
 			return
 
 	var text := str(FALLBACK_TEXTS.get(key, ""))
-	if not text.is_empty():
-		speak_text(text)
-	await get_tree().create_timer(fallback_seconds).timeout
+	if not text.is_empty() and speak_text(text):
+		await get_tree().create_timer(fallback_seconds).timeout
 
 func play_syllable(syllable: String) -> bool:
 	var normalized := syllable.strip_edges().to_lower()
-	var url := NINO_A_BASE + normalized + ".ogg"
-	_play_remote_nonblocking("syllable:" + normalized, url, syllable_player, "", syllable)
+	if _marin_ready:
+		return _play_marin_nonblocking("syllable_" + normalized, syllable_player)
+	_play_remote_nonblocking(
+		"legacy_syllable:" + normalized,
+		NINO_A_BASE + normalized + ".ogg",
+		syllable_player,
+		syllable.to_upper()
+	)
 	return true
 
 func play_syllable_and_wait(syllable: String, fallback_seconds: float = 0.7) -> void:
 	var normalized := syllable.strip_edges().to_lower()
-	var stream := await _fetch_stream("syllable:" + normalized, NINO_A_BASE + normalized + ".ogg")
-	if stream != null:
-		_stop_spoken_audio()
-		syllable_player.stream = stream
-		syllable_player.play()
-		await syllable_player.finished
+	if _marin_ready:
+		var local_stream := _get_marin_stream("syllable_" + normalized)
+		if local_stream != null:
+			await _play_stream_and_wait(local_stream, syllable_player)
 		return
-	speak_text(syllable)
-	await get_tree().create_timer(fallback_seconds).timeout
+
+	var stream := await _fetch_stream(
+		"legacy_syllable:" + normalized,
+		NINO_A_BASE + normalized + ".ogg"
+	)
+	if stream != null:
+		await _play_stream_and_wait(stream, syllable_player)
+		return
+	if speak_text(syllable.to_upper()):
+		await get_tree().create_timer(fallback_seconds).timeout
 
 func play_word(word: String) -> bool:
 	var normalized := word.strip_edges().to_upper()
-	var local_stream := _get_local_word_stream(normalized)
+	if _marin_ready:
+		return _play_marin_nonblocking("word_" + normalized.to_lower(), voice_player)
+
+	var local_stream := _get_legacy_word_stream(normalized)
 	if local_stream != null:
 		_stop_spoken_audio()
 		voice_player.stream = local_stream
 		voice_player.play()
-		return true
-
-	var url := str(NINO_WORD_URLS.get(normalized, ""))
-	if not url.is_empty():
-		_play_remote_nonblocking("word:" + normalized, url, voice_player, "", word.capitalize())
 		return true
 	return speak_text(word.capitalize())
 
 func play_word_and_wait(word: String, fallback_seconds: float = 1.0) -> void:
 	var normalized := word.strip_edges().to_upper()
-	var local_stream := _get_local_word_stream(normalized)
-	if local_stream != null:
-		_stop_spoken_audio()
-		voice_player.stream = local_stream
-		voice_player.play()
-		await voice_player.finished
+	if _marin_ready:
+		var marin_stream := _get_marin_stream("word_" + normalized.to_lower())
+		if marin_stream != null:
+			await _play_stream_and_wait(marin_stream, voice_player)
 		return
 
-	var url := str(NINO_WORD_URLS.get(normalized, ""))
-	if not url.is_empty():
-		var stream := await _fetch_stream("word:" + normalized, url)
-		if stream != null:
-			_stop_spoken_audio()
-			voice_player.stream = stream
-			voice_player.play()
-			await voice_player.finished
-			return
-	speak_text(word.capitalize())
-	await get_tree().create_timer(fallback_seconds).timeout
+	var local_stream := _get_legacy_word_stream(normalized)
+	if local_stream != null:
+		await _play_stream_and_wait(local_stream, voice_player)
+		return
+	if speak_text(word.capitalize()):
+		await get_tree().create_timer(fallback_seconds).timeout
 
-func _get_local_voice_stream(key: String) -> AudioStream:
-	var path := str(LOCAL_VOICE_PATHS.get(key, ""))
-	if path.is_empty() or not ResourceLoader.exists(path):
-		return null
-	return load(path) as AudioStream
-
-func _get_local_word_stream(normalized_word: String) -> AudioStream:
-	var path := str(LOCAL_WORD_PATHS.get(normalized_word, ""))
-	if path.is_empty() or not ResourceLoader.exists(path):
-		return null
-	return load(path) as AudioStream
+func stop_voice() -> void:
+	_stop_spoken_audio()
 
 func speak_text(text: String) -> bool:
 	if _tts_voice.is_empty():
@@ -235,16 +239,126 @@ func speak_text(text: String) -> bool:
 	DisplayServer.tts_speak(text, _tts_voice, volume, 1.0, 0.92, 1, true)
 	return true
 
-func stop_voice() -> void:
-	_stop_spoken_audio()
+func _load_marin_manifest() -> void:
+	_marin_entries.clear()
+	_marin_missing.clear()
+	_marin_ready = false
 
-func _play_remote_nonblocking(cache_key: String, url: String, player: AudioStreamPlayer, fallback_key: String = "", fallback_text: String = "") -> void:
+	if not FileAccess.file_exists(MARIN_MANIFEST_PATH):
+		push_warning("Marin manifest not found. Legacy audio compatibility mode is active.")
+		return
+
+	var file := FileAccess.open(MARIN_MANIFEST_PATH, FileAccess.READ)
+	if file == null:
+		push_warning("Could not open Marin manifest. Legacy audio compatibility mode is active.")
+		return
+
+	var parsed = JSON.parse_string(file.get_as_text())
+	if not (parsed is Dictionary):
+		push_warning("Invalid Marin manifest JSON. Legacy audio compatibility mode is active.")
+		return
+
+	var clips = parsed.get("clips", {})
+	if not (clips is Dictionary) or clips.is_empty():
+		push_warning("Marin manifest contains no clips. Legacy audio compatibility mode is active.")
+		return
+
+	_marin_entries = clips
+	var unique_paths: Dictionary = {}
+	for key in _marin_entries.keys():
+		var entry = _marin_entries[key]
+		if not (entry is Dictionary):
+			_marin_missing.append("invalid entry: " + str(key))
+			continue
+		var path := str(entry.get("file", ""))
+		if path.is_empty():
+			_marin_missing.append("missing file path: " + str(key))
+			continue
+		unique_paths[path] = true
+
+	for path in unique_paths.keys():
+		if not ResourceLoader.exists(str(path)):
+			_marin_missing.append(str(path))
+
+	_marin_ready = _marin_missing.is_empty()
+	if _marin_ready:
+		print("Marin voice pack ready: ", unique_paths.size(), " local clips.")
+	else:
+		push_warning(
+			"Marin voice pack incomplete (" + str(_marin_missing.size()) +
+			" missing). Legacy audio compatibility mode is active."
+		)
+
+func _get_marin_entry(key: String) -> Dictionary:
+	var value = _marin_entries.get(key, {})
+	if value is Dictionary:
+		return value
+	return {}
+
+func _get_marin_stream(key: String) -> AudioStream:
+	var entry := _get_marin_entry(key)
+	if entry.is_empty():
+		return null
+	var path := str(entry.get("file", ""))
+	if path.is_empty() or not ResourceLoader.exists(path):
+		return null
+	return load(path) as AudioStream
+
+func _play_marin_nonblocking(key: String, player: AudioStreamPlayer) -> bool:
+	var stream := _get_marin_stream(key)
+	if stream == null:
+		return false
+	_stop_spoken_audio()
+	player.stream = stream
+	player.play()
+	return true
+
+func _play_legacy_voice(key: String) -> bool:
+	var local_stream := _get_legacy_local_voice_stream(key)
+	if local_stream != null:
+		_stop_spoken_audio()
+		voice_player.stream = local_stream
+		voice_player.play()
+		return true
+
+	var url := str(LEGACY_REMOTE_VOICES.get(key, ""))
+	if not url.is_empty():
+		_play_remote_nonblocking("legacy_voice:" + key, url, voice_player, str(FALLBACK_TEXTS.get(key, "")))
+		return true
+
+	var text := str(FALLBACK_TEXTS.get(key, ""))
+	if not text.is_empty():
+		return speak_text(text)
+	return false
+
+func _get_legacy_local_voice_stream(key: String) -> AudioStream:
+	var path := str(LEGACY_LOCAL_VOICES.get(key, ""))
+	if path.is_empty() or not ResourceLoader.exists(path):
+		return null
+	return load(path) as AudioStream
+
+func _get_legacy_word_stream(normalized_word: String) -> AudioStream:
+	var path := str(LEGACY_WORDS.get(normalized_word, ""))
+	if path.is_empty() or not ResourceLoader.exists(path):
+		return null
+	return load(path) as AudioStream
+
+func _play_stream_and_wait(stream: AudioStream, player: AudioStreamPlayer) -> void:
+	_stop_spoken_audio()
+	var generation := _spoken_generation
+	player.stream = stream
+	player.play()
+	while player.playing and generation == _spoken_generation:
+		await get_tree().process_frame
+
+func _play_remote_nonblocking(cache_key: String, url: String, player: AudioStreamPlayer, fallback_text: String = "") -> void:
 	_stop_spoken_audio()
 	var generation := _spoken_generation
 	if _stream_cache.has(cache_key):
 		player.stream = _stream_cache[cache_key]
 		player.play()
 		return
+
 	var request := HTTPRequest.new()
 	add_child(request)
 	request.request_completed.connect(func(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
@@ -259,32 +373,27 @@ func _play_remote_nonblocking(cache_key: String, url: String, player: AudioStrea
 				player.stream = stream
 				player.play()
 				return
-		if not fallback_key.is_empty():
-			var text := str(FALLBACK_TEXTS.get(fallback_key, ""))
-			if not text.is_empty():
-				speak_text(text)
-		elif not fallback_text.is_empty():
+		if not fallback_text.is_empty():
 			speak_text(fallback_text)
 	, Object.CONNECT_ONE_SHOT)
+
 	var error := request.request(url)
 	if error != OK:
 		request.queue_free()
-		if not fallback_key.is_empty():
-			var text := str(FALLBACK_TEXTS.get(fallback_key, ""))
-			if not text.is_empty():
-				speak_text(text)
-		elif not fallback_text.is_empty():
+		if not fallback_text.is_empty():
 			speak_text(fallback_text)
 
 func _fetch_stream(cache_key: String, url: String) -> AudioStream:
 	if _stream_cache.has(cache_key):
 		return _stream_cache[cache_key]
+
 	var request := HTTPRequest.new()
 	add_child(request)
 	var error := request.request(url)
 	if error != OK:
 		request.queue_free()
 		return null
+
 	var response: Array = await request.request_completed
 	request.queue_free()
 	var result := int(response[0])
@@ -292,6 +401,7 @@ func _fetch_stream(cache_key: String, url: String) -> AudioStream:
 	var body: PackedByteArray = response[3]
 	if result != HTTPRequest.RESULT_SUCCESS or response_code < 200 or response_code >= 300:
 		return null
+
 	var stream := AudioStreamOggVorbis.load_from_buffer(body)
 	if stream != null:
 		_stream_cache[cache_key] = stream
