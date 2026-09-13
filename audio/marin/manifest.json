@@ -1,13 +1,14 @@
 {
   "schema_version": 1,
   "profile": {
-    "provider": "OpenAI",
-    "model": "gpt-4o-mini-tts-2025-12-15",
-    "voice": "marin",
+    "provider": "Kokoro",
+    "model": "hexgrad/Kokoro-82M",
+    "voice": "pf_dora",
     "language": "pt-BR",
     "response_format": "mp3",
     "speed": 0.92,
-    "base_instructions": "Fale em português do Brasil. Use uma voz acolhedora, calma, natural e pedagógica. Mantenha dicção muito clara, ritmo levemente lento, volume e energia consistentes entre todos os arquivos. Fale exatamente o conteúdo solicitado, sem adicionar palavras, risadas, comentários ou explicações."
+    "license": "Apache-2.0",
+    "generation": "local/offline"
   },
   "category_instructions": {
     "title": "Tom alegre e convidativo, sem exagero.",
@@ -19,41 +20,257 @@
     "syllable": "Pronuncie somente a sílaba como uma unidade sonora em português brasileiro; não soletre as letras."
   },
   "clips": {
-    "menu_title": {"display": "Zoológico das Sílabas", "speech": "Zoológico das Sílabas.", "synthesis": "Zoológico das Sílabas.", "file": "res://audio/marin/menu_title.mp3", "category": "title"},
-    "menu_play": {"display": "JOGAR", "speech": "Jogar.", "synthesis": "Jogar.", "file": "res://audio/marin/menu_play.mp3", "category": "ui"},
-    "menu_how_to_play": {"display": "COMO JOGAR", "speech": "Como jogar.", "synthesis": "Como jogar.", "file": "res://audio/marin/menu_how_to_play.mp3", "category": "ui"},
-    "ui_volume": {"display": "Volume", "speech": "Volume.", "synthesis": "Volume.", "file": "res://audio/marin/ui_volume.mp3", "category": "ui"},
-    "ui_back_menu": {"display": "Voltar ao menu", "speech": "Voltar ao menu.", "synthesis": "Voltar ao menu.", "file": "res://audio/marin/ui_back_menu.mp3", "category": "ui"},
-    "ui_help": {"display": "Como jogar", "speech": "Como jogar.", "synthesis": "Como jogar.", "file": "res://audio/marin/menu_how_to_play.mp3", "category": "ui"},
-    "ui_skip": {"display": "PULAR", "speech": "Pular.", "synthesis": "Pular.", "file": "res://audio/marin/ui_skip.mp3", "category": "ui"},
-    "ui_repeat": {"display": "Ouvir novamente", "speech": "Ouvir novamente.", "synthesis": "Ouvir novamente.", "file": "res://audio/marin/ui_repeat.mp3", "category": "ui"},
-    "tutorial_welcome": {"display": "Vamos aprender a jogar!", "speech": "Vamos aprender a jogar!", "synthesis": "Vamos aprender a jogar!", "file": "res://audio/marin/tutorial_welcome.mp3", "category": "instruction"},
-    "tutorial_look_animal": {"display": "Olhe o animal.", "speech": "Olhe o animal.", "synthesis": "Olhe o animal.", "file": "res://audio/marin/tutorial_look_animal.mp3", "category": "instruction"},
-    "tutorial_word_missing": {"display": "Uma parte da palavra está faltando.", "speech": "Uma parte da palavra está faltando.", "synthesis": "Uma parte da palavra está faltando.", "file": "res://audio/marin/tutorial_word_missing.mp3", "category": "instruction"},
-    "tutorial_choose_ca": {"display": "Escolha a sílaba CA.", "speech": "Escolha a sílaba CA.", "synthesis": "Escolha a sílaba CA.", "file": "res://audio/marin/tutorial_choose_ca.mp3", "category": "instruction"},
-    "feedback_correct": {"display": "Você acertou!", "speech": "Você acertou!", "synthesis": "Você acertou!", "file": "res://audio/marin/feedback_correct.mp3", "category": "feedback_positive"},
-    "feedback_try_again": {"display": "Tente outra vez.", "speech": "Tente outra vez.", "synthesis": "Tente outra vez.", "file": "res://audio/marin/feedback_try_again.mp3", "category": "feedback_retry"},
-    "tutorial_your_turn": {"display": "Sua vez!", "speech": "Sua vez!", "synthesis": "Sua vez!", "file": "res://audio/marin/tutorial_your_turn.mp3", "category": "instruction"},
-    "final_title": {"display": "PARABÉNS!", "speech": "Parabéns!", "synthesis": "Parabéns!", "file": "res://audio/marin/final_title.mp3", "category": "feedback_positive"},
-    "final_complete": {"display": "Você completou o Zoológico das Sílabas!", "speech": "Você completou o Zoológico das Sílabas!", "synthesis": "Você completou o Zoológico das Sílabas!", "file": "res://audio/marin/final_complete.mp3", "category": "instruction"},
-    "final_play_again": {"display": "JOGAR DE NOVO", "speech": "Jogar de novo.", "synthesis": "Jogar de novo.", "file": "res://audio/marin/final_play_again.mp3", "category": "ui"},
-    "final_back_menu": {"display": "VOLTAR AO MENU", "speech": "Voltar ao menu.", "synthesis": "Voltar ao menu.", "file": "res://audio/marin/ui_back_menu.mp3", "category": "ui"},
-    "word_cachorro": {"display": "CACHORRO", "speech": "Cachorro.", "synthesis": "Cachorro.", "file": "res://audio/marin/word_cachorro.mp3", "category": "word"},
-    "word_gato": {"display": "GATO", "speech": "Gato.", "synthesis": "Gato.", "file": "res://audio/marin/word_gato.mp3", "category": "word"},
-    "word_macaco": {"display": "MACACO", "speech": "Macaco.", "synthesis": "Macaco.", "file": "res://audio/marin/word_macaco.mp3", "category": "word"},
-    "word_baleia": {"display": "BALEIA", "speech": "Baleia.", "synthesis": "Baleia.", "file": "res://audio/marin/word_baleia.mp3", "category": "word"},
-    "word_cavalo": {"display": "CAVALO", "speech": "Cavalo.", "synthesis": "Cavalo.", "file": "res://audio/marin/word_cavalo.mp3", "category": "word"},
-    "word_galinha": {"display": "GALINHA", "speech": "Galinha.", "synthesis": "Galinha.", "file": "res://audio/marin/word_galinha.mp3", "category": "word"},
-    "word_tartaruga": {"display": "TARTARUGA", "speech": "Tartaruga.", "synthesis": "Tartaruga.", "file": "res://audio/marin/word_tartaruga.mp3", "category": "word"},
-    "syllable_ca": {"display": "CA", "speech": "CA.", "synthesis": "ca", "file": "res://audio/marin/syllable_ca.mp3", "category": "syllable"},
-    "syllable_ba": {"display": "BA", "speech": "BA.", "synthesis": "ba", "file": "res://audio/marin/syllable_ba.mp3", "category": "syllable"},
-    "syllable_pa": {"display": "PA", "speech": "PA.", "synthesis": "pa", "file": "res://audio/marin/syllable_pa.mp3", "category": "syllable"},
-    "syllable_ga": {"display": "GA", "speech": "GA.", "synthesis": "ga", "file": "res://audio/marin/syllable_ga.mp3", "category": "syllable"},
-    "syllable_ma": {"display": "MA", "speech": "MA.", "synthesis": "ma", "file": "res://audio/marin/syllable_ma.mp3", "category": "syllable"},
-    "syllable_ta": {"display": "TA", "speech": "TA.", "synthesis": "ta", "file": "res://audio/marin/syllable_ta.mp3", "category": "syllable"},
-    "syllable_la": {"display": "LA", "speech": "LA.", "synthesis": "la", "file": "res://audio/marin/syllable_la.mp3", "category": "syllable"},
-    "syllable_sa": {"display": "SA", "speech": "SA.", "synthesis": "sa", "file": "res://audio/marin/syllable_sa.mp3", "category": "syllable"},
-    "syllable_ra": {"display": "RA", "speech": "RA.", "synthesis": "ra", "file": "res://audio/marin/syllable_ra.mp3", "category": "syllable"},
-    "syllable_fa": {"display": "FA", "speech": "FA.", "synthesis": "fa", "file": "res://audio/marin/syllable_fa.mp3", "category": "syllable"}
+    "menu_title": {
+      "display": "Zoológico das Sílabas",
+      "speech": "Zoológico das Sílabas.",
+      "synthesis": "Zoológico das Sílabas.",
+      "file": "res://audio/marin/menu_title.mp3",
+      "category": "title"
+    },
+    "menu_play": {
+      "display": "JOGAR",
+      "speech": "Jogar.",
+      "synthesis": "Jogar.",
+      "file": "res://audio/marin/menu_play.mp3",
+      "category": "ui"
+    },
+    "menu_how_to_play": {
+      "display": "COMO JOGAR",
+      "speech": "Como jogar.",
+      "synthesis": "Como jogar.",
+      "file": "res://audio/marin/menu_how_to_play.mp3",
+      "category": "ui"
+    },
+    "ui_volume": {
+      "display": "Volume",
+      "speech": "Volume.",
+      "synthesis": "Volume.",
+      "file": "res://audio/marin/ui_volume.mp3",
+      "category": "ui"
+    },
+    "ui_back_menu": {
+      "display": "Voltar ao menu",
+      "speech": "Voltar ao menu.",
+      "synthesis": "Voltar ao menu.",
+      "file": "res://audio/marin/ui_back_menu.mp3",
+      "category": "ui"
+    },
+    "ui_help": {
+      "display": "Como jogar",
+      "speech": "Como jogar.",
+      "synthesis": "Como jogar.",
+      "file": "res://audio/marin/menu_how_to_play.mp3",
+      "category": "ui"
+    },
+    "ui_skip": {
+      "display": "PULAR",
+      "speech": "Pular.",
+      "synthesis": "Pular.",
+      "file": "res://audio/marin/ui_skip.mp3",
+      "category": "ui"
+    },
+    "ui_repeat": {
+      "display": "Ouvir novamente",
+      "speech": "Ouvir novamente.",
+      "synthesis": "Ouvir novamente.",
+      "file": "res://audio/marin/ui_repeat.mp3",
+      "category": "ui"
+    },
+    "tutorial_welcome": {
+      "display": "Vamos aprender a jogar!",
+      "speech": "Vamos aprender a jogar!",
+      "synthesis": "Vamos aprender a jogar!",
+      "file": "res://audio/marin/tutorial_welcome.mp3",
+      "category": "instruction"
+    },
+    "tutorial_look_animal": {
+      "display": "Olhe o animal.",
+      "speech": "Olhe o animal.",
+      "synthesis": "Olhe o animal.",
+      "file": "res://audio/marin/tutorial_look_animal.mp3",
+      "category": "instruction"
+    },
+    "tutorial_word_missing": {
+      "display": "Uma parte da palavra está faltando.",
+      "speech": "Uma parte da palavra está faltando.",
+      "synthesis": "Uma parte da palavra está faltando.",
+      "file": "res://audio/marin/tutorial_word_missing.mp3",
+      "category": "instruction"
+    },
+    "tutorial_choose_ca": {
+      "display": "Escolha a sílaba CA.",
+      "speech": "Escolha a sílaba CA.",
+      "synthesis": "Escolha a sílaba CA.",
+      "file": "res://audio/marin/tutorial_choose_ca.mp3",
+      "category": "instruction"
+    },
+    "feedback_correct": {
+      "display": "Você acertou!",
+      "speech": "Você acertou!",
+      "synthesis": "Você acertou!",
+      "file": "res://audio/marin/feedback_correct.mp3",
+      "category": "feedback_positive"
+    },
+    "feedback_try_again": {
+      "display": "Tente outra vez.",
+      "speech": "Tente outra vez.",
+      "synthesis": "Tente outra vez.",
+      "file": "res://audio/marin/feedback_try_again.mp3",
+      "category": "feedback_retry"
+    },
+    "tutorial_your_turn": {
+      "display": "Sua vez!",
+      "speech": "Sua vez!",
+      "synthesis": "Sua vez!",
+      "file": "res://audio/marin/tutorial_your_turn.mp3",
+      "category": "instruction"
+    },
+    "final_title": {
+      "display": "PARABÉNS!",
+      "speech": "Parabéns!",
+      "synthesis": "Parabéns!",
+      "file": "res://audio/marin/final_title.mp3",
+      "category": "feedback_positive"
+    },
+    "final_complete": {
+      "display": "Você completou o Zoológico das Sílabas!",
+      "speech": "Você completou o Zoológico das Sílabas!",
+      "synthesis": "Você completou o Zoológico das Sílabas!",
+      "file": "res://audio/marin/final_complete.mp3",
+      "category": "instruction"
+    },
+    "final_play_again": {
+      "display": "JOGAR DE NOVO",
+      "speech": "Jogar de novo.",
+      "synthesis": "Jogar de novo.",
+      "file": "res://audio/marin/final_play_again.mp3",
+      "category": "ui"
+    },
+    "final_back_menu": {
+      "display": "VOLTAR AO MENU",
+      "speech": "Voltar ao menu.",
+      "synthesis": "Voltar ao menu.",
+      "file": "res://audio/marin/ui_back_menu.mp3",
+      "category": "ui"
+    },
+    "word_cachorro": {
+      "display": "CACHORRO",
+      "speech": "Cachorro.",
+      "synthesis": "Cachorro.",
+      "file": "res://audio/marin/word_cachorro.mp3",
+      "category": "word"
+    },
+    "word_gato": {
+      "display": "GATO",
+      "speech": "Gato.",
+      "synthesis": "Gato.",
+      "file": "res://audio/marin/word_gato.mp3",
+      "category": "word"
+    },
+    "word_macaco": {
+      "display": "MACACO",
+      "speech": "Macaco.",
+      "synthesis": "Macaco.",
+      "file": "res://audio/marin/word_macaco.mp3",
+      "category": "word"
+    },
+    "word_baleia": {
+      "display": "BALEIA",
+      "speech": "Baleia.",
+      "synthesis": "Baleia.",
+      "file": "res://audio/marin/word_baleia.mp3",
+      "category": "word"
+    },
+    "word_cavalo": {
+      "display": "CAVALO",
+      "speech": "Cavalo.",
+      "synthesis": "Cavalo.",
+      "file": "res://audio/marin/word_cavalo.mp3",
+      "category": "word"
+    },
+    "word_galinha": {
+      "display": "GALINHA",
+      "speech": "Galinha.",
+      "synthesis": "Galinha.",
+      "file": "res://audio/marin/word_galinha.mp3",
+      "category": "word"
+    },
+    "word_tartaruga": {
+      "display": "TARTARUGA",
+      "speech": "Tartaruga.",
+      "synthesis": "Tartaruga.",
+      "file": "res://audio/marin/word_tartaruga.mp3",
+      "category": "word"
+    },
+    "syllable_ca": {
+      "display": "CA",
+      "speech": "CA.",
+      "synthesis": "ca",
+      "file": "res://audio/marin/syllable_ca.mp3",
+      "category": "syllable"
+    },
+    "syllable_ba": {
+      "display": "BA",
+      "speech": "BA.",
+      "synthesis": "ba",
+      "file": "res://audio/marin/syllable_ba.mp3",
+      "category": "syllable"
+    },
+    "syllable_pa": {
+      "display": "PA",
+      "speech": "PA.",
+      "synthesis": "pa",
+      "file": "res://audio/marin/syllable_pa.mp3",
+      "category": "syllable"
+    },
+    "syllable_ga": {
+      "display": "GA",
+      "speech": "GA.",
+      "synthesis": "ga",
+      "file": "res://audio/marin/syllable_ga.mp3",
+      "category": "syllable"
+    },
+    "syllable_ma": {
+      "display": "MA",
+      "speech": "MA.",
+      "synthesis": "ma",
+      "file": "res://audio/marin/syllable_ma.mp3",
+      "category": "syllable"
+    },
+    "syllable_ta": {
+      "display": "TA",
+      "speech": "TA.",
+      "synthesis": "ta",
+      "file": "res://audio/marin/syllable_ta.mp3",
+      "category": "syllable"
+    },
+    "syllable_la": {
+      "display": "LA",
+      "speech": "LA.",
+      "synthesis": "la",
+      "file": "res://audio/marin/syllable_la.mp3",
+      "category": "syllable"
+    },
+    "syllable_sa": {
+      "display": "SA",
+      "speech": "SA.",
+      "synthesis": "sa",
+      "file": "res://audio/marin/syllable_sa.mp3",
+      "category": "syllable"
+    },
+    "syllable_ra": {
+      "display": "RA",
+      "speech": "RA.",
+      "synthesis": "ra",
+      "file": "res://audio/marin/syllable_ra.mp3",
+      "category": "syllable"
+    },
+    "syllable_fa": {
+      "display": "FA",
+      "speech": "FA.",
+      "synthesis": "fa",
+      "file": "res://audio/marin/syllable_fa.mp3",
+      "category": "syllable"
+    }
   }
 }
