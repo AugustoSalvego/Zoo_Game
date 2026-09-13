@@ -1,68 +1,74 @@
-# Zoo Game - Zoológico das Sílabas
+# Zoológico das Sílabas
 
-An educational game developed with Godot Engine to help children learn syllables and improve reading skills through interactive animal-themed activities.
+Jogo educacional em Godot 4.6 voltado à alfabetização inicial. A criança observa um animal, identifica a sílaba inicial que está faltando no nome e recebe feedback visual e sonoro sem punição por erro.
 
-## About
+## Estado atual
 
-Zoo Game is an educational project focused on early literacy development. The game presents words and challenges related to animals, encouraging players to recognize and complete syllables in a fun and engaging way.
+A versão atual foi reconstruída para substituir o protótipo anterior e priorizar jogabilidade, acessibilidade e estabilidade no navegador.
 
-The goal is to combine learning and entertainment, making the literacy process more interactive for children.
+### Fluxo
 
-## Features
+1. Menu inicial simples e com botões grandes.
+2. Tutorial interativo na primeira execução.
+3. Sete animais em ordem aleatória por partida.
+4. Três opções de sílaba por rodada.
+5. Feedback imediato; após duas tentativas, a resposta correta recebe destaque visual.
+6. A criança controla o ritmo pelo botão **Próximo animal**.
+7. Tela de conclusão com opção de jogar novamente ou voltar ao menu.
 
-* Educational gameplay focused on syllables
-* Animal-themed learning experience
-* Interactive menu system
-* Child-friendly interface
-* Lightweight and easy to run
-* Exportable to Web (HTML5)
+## Acessibilidade e usabilidade
 
-## Technologies
+- Botões grandes e alto contraste.
+- Interface responsiva baseada em `Container`, sem posições absolutas fixas.
+- Mouse, toque e teclado (`1`, `2`, `3` para responder; `Enter` para avançar).
+- Erros não removem progresso e não geram pontuação negativa.
+- Som pode ser ligado/desligado e a preferência é salva em `user://zoo_settings.cfg`.
+- Áudios de sílabas são opcionais: a ausência de um arquivo nunca impede o jogo de funcionar.
 
-* Godot Engine 4
-* GDScript
+## Conteúdo e NinoEdu
 
-## Project Structure
+O conteúdo local em `scripts/game_data.gd` segue o núcleo do contrato usado pelo NinoEdu em `/api/recursos/silabas`:
+
+- `palavra`
+- `silaba`
+- `complemento_silaba`
+- `imagem`
+
+Isso mantém o jogo funcionando offline e deixa a estrutura pronta para substituir o banco local por conteúdo vindo da API do NinoEdu futuramente.
+
+Os áudios de sílabas em `audio/syllables/` foram selecionados do conteúdo pedagógico fornecido pelo projeto NinoEdu.
+
+## Executar
+
+Abra o projeto com **Godot 4.6.x** e pressione `F6`/`F5` ou execute a cena principal.
+
+O projeto usa o renderizador **Compatibility**, necessário para exportação Web no Godot 4.
+
+## Exportação Web
+
+O preset `Web` exporta para `index.html`. O workflow `.github/workflows/export-web.yml` recompila o projeto no `main` usando Godot 4.6 e atualiza os arquivos Web exportados.
+
+## Estrutura principal
 
 ```text
-Zoo_Game/
-├── img/
-├── scenes/
-│   ├── Jogo.tscn
-│   └── Menu.tscn
-├── scripts/
-│   ├── jogo.gd
-│   └── menu.gd
-├── project.godot
-└── README.md
+scenes/
+  Menu.tscn
+  Tutorial.tscn
+  Jogo.tscn
+scripts/
+  menu.gd
+  tutorial.gd
+  jogo.gd
+  game_data.gd
+  accessibility_audio.gd
+img/
+  ...
+audio/
+  syllables/
+    ...
 ```
-
-## Running the Project
-
-1. Install Godot Engine 4.x
-2. Clone this repository:
-
-```bash
-git clone https://github.com/AugustoSalvego/Zoo_Game.git
-```
-
-3. Open the project using Godot.
-4. Run the project from the editor.
-
-## Web Export
-
-The project can be exported to HTML5 and hosted using GitHub Pages.
-
-## Future Improvements
-
-* Additional animals and vocabulary
-* Sound effects and voice narration
-* Multiple difficulty levels
-* Multilingual support
-* Improved visual feedback
 
 ## Author
 
-**Danilo Augusto Salvego dos Santos**
-
-GitHub: [AugustoSalvego](https://github.com/AugustoSalvego)
+Danilo Augusto Salvego dos Santos  
+GitHub: https://github.com/AugustoSalvego
