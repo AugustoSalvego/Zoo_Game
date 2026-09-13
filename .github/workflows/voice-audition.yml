@@ -1,0 +1,49 @@
+name: Voice Audition - Kokoro pt-BR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout audio branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/preserve-original-polish
+          fetch-depth: 0
+
+      - name: Install Kokoro dependencies
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq espeak-ng ffmpeg
+          python3 -m pip install --upgrade pip
+          python3 -m pip install "kokoro>=0.9.4" soundfile numpy
+
+      - name: Generate comparison samples
+        shell: bash
+        run: |
+          rm -rf audio/audition
+          python3 tools/generate_voice_audition.py
+
+      - name: Commit audition pack
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add audio/audition
+
+          if git diff --cached --quiet; then
+            echo "Voice audition pack is already up to date."
+            exit 0
+          fi
+
+          git commit -m "audio: generate Kokoro pt-BR voice audition pack"
+          git push origin "HEAD:fix/preserve-original-polish"
