@@ -13,6 +13,16 @@ on:
       - "index.audio.worklet.js"
       - "index.icon.png"
       - "index.apple-touch-icon.png"
+  pull_request:
+    paths-ignore:
+      - "index.html"
+      - "index.js"
+      - "index.pck"
+      - "index.wasm"
+      - "index.audio.position.worklet.js"
+      - "index.audio.worklet.js"
+      - "index.icon.png"
+      - "index.apple-touch-icon.png"
   workflow_dispatch:
 
 permissions:
@@ -29,34 +39,40 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download Godot 4.6
+      - name: Validate narration contract
         shell: bash
         run: |
-          curl -L -o godot.zip "https://github.com/godotengine/godot-builds/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip"
-          unzip -q godot.zip
-          chmod +x Godot_v4.6-stable_linux.x86_64
+          python3 tools/validate_voice_contract.py
 
-      - name: Install Godot 4.6 export templates
+      - name: Download Godot 4.7.2
         shell: bash
         run: |
-          curl -L -o export_templates.tpz "https://github.com/godotengine/godot-builds/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz"
+          curl -L -o godot.zip "https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+
+      - name: Install Godot 4.7.2 export templates
+        shell: bash
+        run: |
+          curl -L -o export_templates.tpz "https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_export_templates.tpz"
           rm -rf export_templates_unpack
           mkdir -p export_templates_unpack
           unzip -q export_templates.tpz -d export_templates_unpack
-          mkdir -p "$HOME/.local/share/godot/export_templates/4.6.stable"
-          cp -R export_templates_unpack/templates/. "$HOME/.local/share/godot/export_templates/4.6.stable/"
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.7.2.stable"
+          cp -R export_templates_unpack/templates/. "$HOME/.local/share/godot/export_templates/4.7.2.stable/"
 
       - name: Import project resources
         shell: bash
         run: |
-          ./Godot_v4.6-stable_linux.x86_64 --headless --path . --editor --quit
+          ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --editor --quit
 
       - name: Export Web build
         shell: bash
         run: |
-          ./Godot_v4.6-stable_linux.x86_64 --headless --path . --export-release "Web" index.html
+          ./Godot_v4.7.2-stable_linux.x86_64 --headless --path . --export-release "Web" index.html
 
       - name: Commit updated Web export
+        if: github.event_name == 'push'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"

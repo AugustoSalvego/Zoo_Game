@@ -1,54 +1,54 @@
-# Áudios necessários para completar a versão APAE
+# Marin audio checklist
 
-Coloque os arquivos em `audio/voice/`. O jogo aceita `.ogg`, `.wav` ou `.mp3`.
+The final Zoo-Game audio is defined by `audio/marin/manifest.json`.
 
-## Tutorial
-- `tutorial_welcome` — “Vamos aprender a jogar!”
-- `tutorial_look_animal` — “Olhe o animal.”
-- `tutorial_word_missing` — “Uma parte da palavra está faltando.”
-- `tutorial_choose_ca` — “Escolha a sílaba CA.”
-- `tutorial_click_ca` — “Agora clique em CA.”
-- `tutorial_your_turn` — “Agora é sua vez!”
+## Why this exists
 
-## Instruções gerais
-- `instruction_choose_syllable` — “Escolha a sílaba que completa o nome deste animal.”
-- `feedback_correct` — “Muito bem! Você acertou!”
-- `feedback_try_again` — “Tente outra vez.”
-- `final_congratulations` — “Parabéns! Você completou o Zoológico das Sílabas!”
+The project previously mixed remote NinoEdu/Ligue-as-Sílabas recordings, locally generated words,
+system TTS, and interface phrases. That made narrator, pacing, volume, and sometimes wording change
+between screens.
 
-## Interface
-- `menu_play` — “Jogar.”
-- `menu_how_to_play` — “Como jogar.”
-- `ui_back` — “Voltar.”
-- `ui_help` — “Como jogar.”
-- `ui_repeat` — “Ouvir novamente.”
-- `ui_volume` — “Volume.”
-- `ui_skip` — “Pular tutorial.”
+The final target is one narrator for the entire game: **OpenAI Marin**.
 
-## Animais
-- `animal_cachorro` — “Cachorro.”
-- `animal_gato` — “Gato.”
-- `animal_macaco` — “Macaco.”
-- `animal_baleia` — “Baleia.”
-- `animal_cavalo` — “Cavalo.”
-- `animal_galinha` — “Galinha.”
-- `animal_tartaruga` — “Tartaruga.”
+## Required coverage
 
-## Sílabas
-- `syllable_ca` — “CA.”
-- `syllable_ba` — “BA.”
-- `syllable_pa` — “PA.”
-- `syllable_ga` — “GA.”
-- `syllable_ma` — “MA.”
-- `syllable_ta` — “TA.”
-- `syllable_la` — “LA.”
-- `syllable_sa` — “SA.”
-- `syllable_ra` — “RA.”
-- `syllable_fa` — “FA.”
+The manifest contains every spoken semantic element used by the current game:
 
-## Música opcional
-Coloque em `audio/music/`:
-- `menu.ogg`
-- `game.ogg`
+- menu title and menu buttons;
+- top-bar controls;
+- complete tutorial narration;
+- correct/wrong feedback;
+- final-screen title, completion message and actions;
+- all seven animal names;
+- all ten syllables used by the current seven phases.
 
-A música é opcional. Sem esses arquivos o jogo funciona normalmente.
+The current manifest has 36 semantic entries and 34 unique audio files because identical phrases
+such as “Como jogar” and “Voltar ao menu” intentionally reuse the same recording.
+
+## Generate locally
+
+Do not paste an API key into source code or chat.
+
+PowerShell:
+
+```powershell
+$env:OPENAI_API_KEY="YOUR_KEY"
+python tools/generate_marin_audio.py --force
+python tools/generate_marin_audio.py --check
+```
+
+The generator uses the model, voice, speed, wording and style directly from the manifest.
+
+## Generate with GitHub Actions
+
+Add a repository Actions secret named `OPENAI_API_KEY`, select the desired branch in GitHub Actions,
+and run **Generate Marin Voice Pack** manually. The workflow generates the complete set, validates it,
+commits the MP3 assets, and pushes them back to the selected branch.
+
+## All-or-nothing activation
+
+The Godot audio manager validates the Marin pack on startup. Marin is used only when every required
+manifest file exists. This prevents a partially generated pack from mixing Marin with another narrator.
+
+When the complete pack is present, all words, syllables, instructions and interface speech are loaded
+locally from the repository. No network request is needed during gameplay.
