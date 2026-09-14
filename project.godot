@@ -4,6 +4,7 @@
 ;
 ; Format:
 ;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -11,24 +12,22 @@ config_version=5
 
 config/name="ZoologicoDasSilabas"
 run/main_scene="uid://bggt3w3t0q4pc"
-config/features=PackedStringArray("4.6", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
-
-[autoload]
-
-Audio="*res://scripts/accessibility_audio.gd"
 
 [audio]
 
 general/text_to_speech=true
+
+[autoload]
+
+Audio="*res://scripts/accessibility_audio.gd"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
-window/handheld/orientation=0
 
 [dotnet]
 

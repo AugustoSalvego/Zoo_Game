@@ -1,67 +1,53 @@
-# Instalação e teste — Zoológico das Sílabas
+# Instalação e teste — Edição de Apresentação
 
-## 1. Atualizar a branch de desenvolvimento
+Versão: **v1.1.0-rc.1**. Esta é uma versão candidata, ainda sujeita a ajustes.
 
-```powershell
-git switch fix/preserve-original-polish
-git pull origin fix/preserve-original-polish
-```
+## Executar o jogo
 
-## 2. Abrir no Godot
+1. Clone o repositório ou atualize sua cópia da branch `main`.
+2. Abra `project.godot` no Godot **4.7.2**.
+3. Aguarde a importação dos recursos.
+4. Pressione **F5** para executar o projeto a partir do menu.
 
-Use Godot 4.6, abra `project.godot`, aguarde a importação dos recursos e execute o projeto.
+Os 34 MP3 da voz brasileira `pt-BR-FranciscaNeural` já estão versionados. Não é necessário gerar os áudios novamente para jogar.
 
-O jogo permanece funcional enquanto o pacote Marin ainda não foi gerado. Nessa fase, o gerenciador de áudio entra automaticamente em modo de compatibilidade. A migração final para Marin só é ativada quando o conjunto inteiro estiver presente.
+## Gerar áudios com Edge TTS
 
-## 3. Gerar o pacote final Marin
-
-O arquivo `audio/marin/manifest.json` define todas as falas e deve ser tratado como fonte da verdade.
-
-### Opção A — localmente
-
-Defina sua chave como variável de ambiente. Nunca coloque a chave em arquivo versionado.
-
-PowerShell:
+Requer Python 3.14 e internet. Execute os comandos na raiz do projeto:
 
 ```powershell
-$env:OPENAI_API_KEY="SUA_CHAVE"
-python tools/generate_marin_audio.py --force
-python tools/generate_marin_audio.py --check
+python -m pip install --upgrade edge-tts
+python tools/generate_edge_tts_audio.py --test
 ```
 
-Quando `--check` concluir sem arquivos ausentes, o Godot usará Marin automaticamente na próxima execução.
+Ouça as cinco amostras em `audio_test/`. O modo de teste não altera o pacote do jogo.
 
-### Opção B — GitHub Actions
+Para substituir todos os MP3 definidos em `audio/marin/manifest.json`:
 
-1. No repositório, configure um secret de Actions chamado `OPENAI_API_KEY`.
-2. Abra **Actions**.
-3. Escolha **Generate Marin Voice Pack**.
-4. Selecione a branch `fix/preserve-original-polish`.
-5. Execute o workflow manualmente.
-6. Ao concluir, faça `git pull` novamente.
+```powershell
+python tools/generate_edge_tts_audio.py
+```
 
-O workflow gera o pacote inteiro e faz commit dos arquivos de áudio na branch selecionada.
+O script cria uma cópia completa de `audio/marin/` em `audio/marin_backup/` antes de substituir os áudios. Um backup existente é preservado. O manifest e os nomes dos arquivos permanecem intactos; arquivos compartilhados são gerados uma única vez.
 
-## 4. Teste funcional obrigatório
+As velocidades são `-18%` para sílabas, `-12%` para palavras e `-10%` para as demais categorias, com volume `+0%` e pitch `+0Hz`.
 
-Teste o fluxo completo, sem pular etapas:
+## Conferência antes da apresentação
 
-- Menu → Jogar.
-- Menu → Como jogar.
+- Menu: Jogar e Como jogar.
 - Tutorial completo, incluindo uma resposta errada e uma correta.
-- Clique/toque no animal durante tutorial e jogo.
+- Clique/toque no animal e nas sílabas para ouvir a narração.
 - Todas as sete fases.
-- Todas as sílabas possíveis ao menos uma vez.
-- Repetir áudio.
-- Abrir e ajustar volume.
-- Como jogar a partir da partida.
-- Voltar ao menu a partir da partida.
-- Tela final.
-- Jogar de novo.
-- Voltar ao menu na tela final.
+- Repetir áudio e ajustar volume.
+- Abrir Como jogar e voltar ao menu durante a partida.
+- Tela final: jogar novamente e voltar ao menu.
 
-Em cada estado, confira que o texto visível representa exatamente o conteúdo falado. A referência completa está em `VOICE_AUDIT.md`.
+Confira se as falas correspondem ao texto exibido e se o volume está adequado no equipamento da apresentação.
 
-## 5. Validação automática
+## Validação automática
 
-Pull requests executam a importação do projeto e a exportação Web com Godot 4.6. Uma alteração só deve ser considerada tecnicamente pronta depois que esse workflow concluir com sucesso.
+```powershell
+python tools/validate_voice_contract.py
+```
+
+O workflow **Export Godot Web** valida o contrato das falas, importa os recursos e exporta a versão Web com Godot 4.7.2. Em pushes para `main`, ele atualiza os arquivos `index.*` no repositório.

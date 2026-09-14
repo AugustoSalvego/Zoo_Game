@@ -1,5 +1,9 @@
 # Zoo Game — Zoológico das Sílabas
 
+**v1.1.0-rc.1 — Edição de Apresentação**
+
+Versão candidata para apresentação, próxima da versão final e aberta a novos ajustes.
+
 Jogo educacional desenvolvido em Godot para apoiar atividades de alfabetização por meio da associação entre animais, palavras e sílabas.
 
 O projeto está sendo preparado para uso em contexto educacional inclusivo, incluindo crianças atendidas pela APAE. Por isso, clareza, previsibilidade, repetição sob demanda, feedback visual/sonoro coerente e funcionamento por mouse ou toque são requisitos do produto — não apenas detalhes de interface.
@@ -35,7 +39,7 @@ O tutorial é apresentado automaticamente na primeira execução e também pode 
 
 ## Sistema de voz
 
-A versão final usa uma única identidade de voz para todo o produto: **OpenAI Marin**.
+A Edição de Apresentação usa **Microsoft Edge TTS**, com a voz brasileira **pt-BR-FranciscaNeural**, em substituição ao pacote Kokoro.
 
 O arquivo `audio/marin/manifest.json` é a fonte da verdade para cada conteúdo falado. Ele registra:
 
@@ -45,26 +49,27 @@ O arquivo `audio/marin/manifest.json` é a fonte da verdade para cada conteúdo 
 - arquivo de áudio;
 - categoria de entonação.
 
-O pacote Marin é ativado de forma **all-or-nothing**: o jogo só passa para Marin quando todos os arquivos exigidos pelo manifesto estiverem presentes. Isso impede uma versão parcialmente migrada de misturar narradores.
+Os 34 MP3 já estão incluídos no repositório e atendem às 36 entradas do manifest. A pasta mantém o nome histórico `audio/marin` para preservar os caminhos utilizados pelo Godot. O pacote completo é ativado somente quando todos os arquivos exigidos pelo manifesto estão presentes.
 
-A geração é reproduzível com:
+Para gerar novamente, use Python 3.14 e uma conexão com a internet:
 
 ```bash
-python tools/generate_marin_audio.py --force
-python tools/generate_marin_audio.py --check
+python -m pip install --upgrade edge-tts
+python tools/generate_edge_tts_audio.py --test
+python tools/generate_edge_tts_audio.py
 ```
 
-É necessário definir `OPENAI_API_KEY` no ambiente. A chave nunca deve ser adicionada ao código ou ao repositório.
+O modo `--test` gera cinco amostras em `audio_test/`, sem alterar os áudios reais. A execução normal cria `audio/marin_backup/` somente se ainda não existir e substitui cada MP3 uma única vez, usando o campo `synthesis`. O manifest permanece intacto. Backup e amostras são locais e não entram no Git.
 
-Também existe o workflow manual **Generate Marin Voice Pack**, que usa o secret `OPENAI_API_KEY` do GitHub Actions para gerar e versionar o pacote completo.
+As velocidades são `-18%` para sílabas, `-12%` para palavras e `-10%` para as demais categorias, com volume `+0%` e pitch `+0Hz`. A reprodução no jogo usa os arquivos locais; não exige Python nem acesso ao serviço TTS.
 
-Consulte `VOICE_AUDIT.md` para o contrato completo de texto ↔ áudio e `AUDIO_CHECKLIST.md` para o procedimento de geração.
+Consulte `INSTALL.md` para executar e verificar esta edição. Os scripts e workflows antigos de Kokoro permanecem como histórico; a geração desta edição usa `tools/generate_edge_tts_audio.py`.
 
 ## Tecnologias
 
-- Godot Engine 4.6
+- Godot Engine 4.7.2
 - GDScript
-- OpenAI Text-to-Speech para a biblioteca final de voz
+- Microsoft Edge TTS para gerar a biblioteca de voz brasileira
 - GitHub Actions para validação e exportação Web
 
 ## Estrutura principal
@@ -88,7 +93,8 @@ Zoo_Game/
 │   ├── tutorial.gd
 │   └── jogo.gd
 ├── tools/
-│   └── generate_marin_audio.py
+│   ├── generate_edge_tts_audio.py
+│   └── validate_voice_contract.py
 ├── VOICE_AUDIT.md
 ├── AUDIO_CHECKLIST.md
 ├── project.godot
@@ -97,13 +103,13 @@ Zoo_Game/
 
 ## Executando o projeto
 
-1. Instale o Godot 4.6.
+1. Instale o Godot 4.7.2.
 2. Clone o repositório.
 3. Abra `project.godot` no editor.
 4. Aguarde a importação dos recursos.
-5. Execute o projeto com **F6/F5**.
+5. Execute o projeto com **F5**.
 
-A branch de desenvolvimento também é validada pelo GitHub Actions com importação headless e exportação Web no Godot 4.6.
+A branch `main` também é validada pelo GitHub Actions com importação headless e exportação Web no Godot 4.7.2.
 
 ## Author
 

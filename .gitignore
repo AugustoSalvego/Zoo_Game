@@ -1,3 +1,11 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Local audio backups and voice samples
+/audio/marin_backup/
+/audio_test/
+
+# Python cache
+__pycache__/
+*.py[cod]
