@@ -4,6 +4,8 @@
 
 Versão candidata para apresentação, próxima da versão final e aberta a novos ajustes.
 
+Veja o [tutorial para entender e repetir a troca de voz e a preparação desta edição](TUTORIAL_PARA_COLEGA.md).
+
 Jogo educacional desenvolvido em Godot para apoiar atividades de alfabetização por meio da associação entre animais, palavras e sílabas.
 
 O projeto está sendo preparado para uso em contexto educacional inclusivo, incluindo crianças atendidas pela APAE. Por isso, clareza, previsibilidade, repetição sob demanda, feedback visual/sonoro coerente e funcionamento por mouse ou toque são requisitos do produto — não apenas detalhes de interface.
