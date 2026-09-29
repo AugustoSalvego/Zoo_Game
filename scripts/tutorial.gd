@@ -126,7 +126,8 @@ func criar_interface() -> void:
 	add_child(btn_skip)
 
 	btn_repeat = Button.new()
-	btn_repeat.text = "🔊"
+	btn_repeat.icon = VOLUME_ICON
+	btn_repeat.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn_repeat.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	btn_repeat.offset_left = -220
 	btn_repeat.offset_top = 24

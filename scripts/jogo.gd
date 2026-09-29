@@ -2,6 +2,7 @@ extends Control
 
 const VOLUME_ICON := preload("res://audio/icons/volume.png")
 const MUTED_ICON := preload("res://audio/icons/muted.png")
+const BACK_ICON := preload("res://audio/icons/back.svg")
 
 @onready var layout: Control = $Layout
 @onready var fundo_jogo: TextureRect = $Layout/FundoJogo
@@ -45,6 +46,7 @@ var fases = [
 
 func _ready() -> void:
 	audio = Audio
+	fases.shuffle()
 	configurar_layout()
 	estilizar_interface()
 	criar_controles_acessibilidade()
@@ -132,9 +134,9 @@ func estilizar_interface() -> void:
 func criar_controles_acessibilidade() -> void:
 	progress_container = HBoxContainer.new()
 	progress_container.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	progress_container.offset_left = -125
+	progress_container.offset_left = -180
 	progress_container.offset_top = 28
-	progress_container.offset_right = 125
+	progress_container.offset_right = 180
 	progress_container.offset_bottom = 54
 	progress_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	progress_container.add_theme_constant_override("separation", 14)
@@ -155,7 +157,8 @@ func criar_controles_acessibilidade() -> void:
 	instruction_label.add_theme_color_override("font_color", Color.BLACK)
 	layout.add_child(instruction_label)
 
-	btn_voltar = criar_botao_topo("↩", Vector2(24, 24))
+	btn_voltar = criar_botao_topo("", Vector2(24, 24))
+	btn_voltar.icon = BACK_ICON
 	btn_voltar.tooltip_text = audio.get_display_text("ui_back_menu", "Voltar ao menu")
 	btn_voltar.pressed.connect(voltar_menu_com_audio)
 
@@ -163,7 +166,8 @@ func criar_controles_acessibilidade() -> void:
 	btn_ajuda.tooltip_text = audio.get_display_text("ui_help", "Como jogar")
 	btn_ajuda.pressed.connect(abrir_tutorial_com_audio)
 
-	btn_repetir = criar_botao_topo("🔊", Vector2(224, 24))
+	btn_repetir = criar_botao_topo("", Vector2(224, 24))
+	btn_repetir.icon = VOLUME_ICON
 	btn_repetir.tooltip_text = audio.get_display_text("ui_repeat", "Ouvir novamente")
 	btn_repetir.pressed.connect(repetir_instrucao)
 
@@ -221,6 +225,7 @@ func criar_botao_topo(texto: String, posicao: Vector2) -> Button:
 	botao.text = texto
 	botao.size = Vector2(90, 72)
 	botao.position = posicao
+	botao.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	estilizar_botao_pequeno(botao)
 	layout.add_child(botao)
 	return botao
@@ -359,7 +364,7 @@ func atualizar_progresso() -> void:
 
 func criar_bolinha_progresso(ativa: bool) -> Panel:
 	var dot := Panel.new()
-	dot.custom_minimum_size = Vector2(20, 20)
+	dot.custom_minimum_size = Vector2(24, 24)
 	dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dot.add_theme_stylebox_override("panel", criar_estilo_bolinha(ativa))
 	return dot
@@ -367,10 +372,10 @@ func criar_bolinha_progresso(ativa: bool) -> Panel:
 
 func criar_estilo_bolinha(ativa: bool) -> StyleBoxFlat:
 	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Color(0.10, 0.10, 0.10, 1.0) if ativa else Color(1, 1, 1, 0.36)
+	estilo.bg_color = Color(0.10, 0.10, 0.10, 1.0) if ativa else Color(1, 1, 1, 0.94)
 	estilo.border_color = Color(0.18, 0.18, 0.18)
 	estilo.set_border_width_all(2)
-	estilo.set_corner_radius_all(10)
+	estilo.set_corner_radius_all(12)
 	return estilo
 
 
@@ -461,6 +466,7 @@ func reiniciar_jogo() -> void:
 	audio.stop_voice()
 
 	fase_atual = 0
+	fases.shuffle()
 	opcoes_atuais.clear()
 	btn_reiniciar.disabled = false
 	btn_menu_final.disabled = false
