@@ -113,6 +113,12 @@ Zoo_Game/
 
 A branch `main` também é validada pelo GitHub Actions com importação headless e exportação Web no Godot 4.7.2.
 
+## Android e telas horizontais
+
+O projeto usa **Sensor Landscape** em `Project Settings > Display > Window > Handheld > Orientation`: inicia na horizontal e aceita as duas posições horizontais do aparelho. A interface usa `Canvas Items` com aspecto `Expand`; o conteúdo central permanece na área de referência 1920 × 1080 e o fundo cobre as faixas adicionais de telas mais largas ou mais altas. Ícones de áudio e navegação são recursos do projeto, sem depender de emoji da fonte do celular.
+
+Para gerar um APK, instale os export templates da **mesma versão do editor (4.7.2)**, configure Android SDK e JDK no Godot e adicione um preset Android em `Project > Export`. Confira no aparelho o menu, tutorial, sete fases, pontos de progresso, botões de áudio, toque nos animais e tela final. Teste pelo menos uma tela 16:9 e outra mais larga, inclusive a rotação para a outra posição horizontal. O preset Android e as credenciais de assinatura são configurados na máquina que gera o APK.
+
 ## Author
 
 **Danilo Augusto Salvego dos Santos**
